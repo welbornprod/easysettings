@@ -16,7 +16,7 @@ you can import it by typing:
 
 Example
 =======
-Example of Easy Settings usage::
+Example of Easy Settings usage:
 
     #!/usr/bin/env python
     # if using a local copy:
@@ -43,13 +43,13 @@ the overhead and complication of other modules then this is for you.
 
 Easy Settings uses a dictionary to store settings before writing to disk, so you can
 also access settings like a dictionary object using ``easysettings.settings``. This 
-allows you to do things like this (where ``mysettings`` is an EasySettings instance)::
+allows you to do things like this (where ``mysettings`` is an EasySettings instance):
     
     for s_opt in mysettings.settings.iterkeys():
               print "Setting '" + s_opt + "' is set to '" + mysettings.settings[s_opt] + "'"
         # this results in: "Setting 'username' is set to 'otheruser'"
 
-You can also retrieve a list of options & values strings::
+You can also retrieve a list of options & values as one-liner strings:
 
     lst_settings = mysettings.list_settings()
     for itm in lst_settings:
