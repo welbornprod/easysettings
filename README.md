@@ -3,23 +3,13 @@ Easy Settings
 
 Easy Settings allows you to easily save and retrieve simple application settings.
 
-Full PyPi package available at: http://http://pypi.python.org/pypi/EasySettings
+Full PyPi package available at: http://pypi.python.org/pypi/EasySettings
 
-Install
-=======
-Use pip to install the module to be used globally. 
-If pip is not installed you can use this to install it::
 
-    sudo apt-get install python-pip
-
-After that you should be able to install Easy Settings by typing::
-
-    sudo pip install easysettings
-
-Local Use/Editing
+Local Use
 =================
 This file is hosted on github to be downloaded as a single-file module. If you include it in your project directory
-you can import it by typing::
+you can import it by typing:
 
     import easysettings
     settings = easysettings.easysettings()
@@ -29,9 +19,10 @@ Example
 Example of Easy Settings usage::
 
     #!/usr/bin/env python
+    # if using a local copy:
+    import easysettings
     # use this method if pypi package is installed
-    from easysettings import easysettings
-    # if using a local copy: import easysettings
+    # from easysettings import easysettings
 
     settings = easysettings.easysettings("myconfigfile.conf")
     settings.configfile_create()
@@ -65,6 +56,19 @@ You can also retrieve a list of options & values strings::
               print itm
         # this results in "username=otheruser"
     
+PyPi Package
+============
+
+Full PyPi package available at: http://pypi.python.org/pypi/EasySettings
+
+Use pip to install Easy Settings to be used globally.
+Ubuntu instructions to install pip:
+
+    sudo apt-get install python-pip
+
+After that you should be able to install Easy Settings by typing:
+
+    sudo pip install easysettings
 
 Website
 =======
