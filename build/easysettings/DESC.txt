@@ -1,1 +1,0 @@
-Easily save & retrieve your application's settings.
