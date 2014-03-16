@@ -25,7 +25,7 @@ Fixed small bug in `setsave()` where `setsave('opt', False)` caused errors.
 
 
 Version 1.8.3:
-Previous version fixes previous bugs, where non-string types were not being loaded or saved
+Non-string types were not being loaded or saved
 properly. All issues are resolved. The method has been enhanced so debug printing will be
 'prettier'. Example of 'debug printing' settings:
 
@@ -256,6 +256,12 @@ Ubuntu instructions to install pip:
 After that you should be able to install Easy Settings by typing:
 
     sudo pip install easysettings
+
+
+Source Code
+===========
+
+You can view the source for this package at: https://github.com/welbornprod/easysettings
 
 
 Website

@@ -26,17 +26,9 @@ Fixed small bug in `setsave()` where `setsave('opt', False)` caused errors.
 
 
 Version 1.8.3:
-Now supports Python 3.3! The major difference was in the ``pickle`` library.
-``pickle`` used strings in python 2.7, and bytes in python 3. All pickled objects
-are now using a string format in EasySettings, with the help of 3 little conversion
-functions. You will never have to use these  functions, they're really internal used
-only. But if you want to see how to return a string from ``pickle.dumps()`` in python 3,
-look at the ``safe_pickle_str()`` function. To load *from* a string, instead of bytes, in
-python 3's ``pickle.loads()``, look at ``safe_pickle_obj()``.
-
-
-The non-string saving method has been enhanced so debug printing will be
-'prettier'. Example of 'debug printing' settings::
+Non-string types were not being loaded or saved
+properly. All issues are resolved. The method has been enhanced so debug printing will be
+'prettier'. Example of 'debug printing' settings:
 
 	from easysettings import EasySettings
 	settings = EasySettings('myconfigfile.conf')
@@ -265,6 +257,12 @@ Ubuntu instructions to install pip:
 After that you should be able to install Easy Settings by typing:
 
     sudo pip install easysettings
+
+
+Source Code
+===========
+
+You can view the source for this package at: https://github.com/welbornprod/easysettings
 
 
 Website
