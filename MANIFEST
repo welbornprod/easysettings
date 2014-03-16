@@ -6,4 +6,3 @@ README.txt
 setup.py
 docs/gpl.txt
 easysettings/__init__.py
-easysettings/easysettings.py
