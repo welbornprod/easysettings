@@ -9,7 +9,7 @@ from distutils.core import setup
 
 setup(
     name='EasySettings',
-    version='1.9.0',
+    version='1.9.1',
     author='Christopher Welborn',
     author_email='cj@welbornprod.com',
     packages=['easysettings'],

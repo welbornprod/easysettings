@@ -24,7 +24,7 @@ Created on Jan 16, 2013
 @author: Christopher Welborn
 '''
 # easy settings version
-__version__ = '1.8.8'
+__version__ = '1.9.1'
 
 # file related imports
 import sys
@@ -45,7 +45,7 @@ __all__ = [
 #    in python 2. We will be using strings because they fit the config file
 #    format we have been using. No binary config files allowed here.
 #    see: safe_pickled_str(), safe_pickled_obj(), and their helper pickled_str()
-if sys.version > '3':
+if sys.version_info.major == 3:
     PYTHON3 = True
     # python 3 needs no long() function.
     long = int
