@@ -32,8 +32,12 @@ import os.path
 # pickling the whole settings object
 import pickle
 
-__all__ = ['EasySettings', 'version', 'esError', 'esGetError', 'esSetError', 'esCompareError',
-           'esSaveError', 'esValueError', 'test_run']
+__all__ = [
+    'EasySettings', 'version',
+    'esError', 'esGetError', 'esSetError',
+    'esCompareError', 'esSaveError', 'esValueError',
+    'test_run',
+]
 
 
 # Python 3 compatibility flag
@@ -92,6 +96,7 @@ class EasySettings():
         # settings.version = "1.0"
         self.name = None
         self.version = None
+
         # default config file (better to set your own file)
         # like: settings.configfile = "myfile.config"
         #   or: settings = easysettings.EasySettings("myfile.config")
@@ -203,11 +208,14 @@ class EasySettings():
         
         try:
             if self.name is None:
-                smsg = ""
+                smsg = ''
             else:
-                smsg = " for " + self.name
+                smsg = ' for {}'.format(self.name)
+                if self.version:
+                    smsg = '{} v. {}'.format(smsg, self.version)
+
             with open(sfile, 'w') as fwrite:
-                fwrite.write("# configuration" + smsg + "\n")
+                fwrite.write('# configuration{}\n'.format(smsg))
                 for skey in list(self.settings.keys()):
                     val = self.settings[skey]
                     if isinstance(val, str):
@@ -320,20 +328,25 @@ class EasySettings():
         
     def set_list(self, lst_settings):
         """ sets a list of settings...
-                (string values only)
             format of list should be:
-                ['option1=value1', 'option2=', 'option3=val3', ...]
+                [('option1', 'value1'), ('option2',), ('option3', 'val3'), ...]
             (same format that list_settings() outputs...)
         """
-        try:
-            for sset in lst_settings:
-                # actual setting?
-                if "=" in sset:
-                    sopt = sset[:sset.index("=")]
-                    sval = sset[sset.index("=") + 1:]
-                    self.set(sopt, sval)
-        except Exception as exsetlist:
-            raise esSetError(exsetlist)
+
+        for sset in lst_settings:
+            if sset:
+                if len(sset) == 2:
+                    opt, val = sset
+                elif len(sset) == 1:
+                    opt = sset[0]
+                    val = None
+                else:
+                    raise ValueError('Expecting list of tuples! '
+                                     '[(opt, val), (opt, val), ..]')
+                try:
+                    self.set(opt, val)
+                except Exception as exsetlist:
+                    raise esSetError(exsetlist)
         return True
                   
     def setsave(self, soption, svalue=None):
@@ -472,18 +485,16 @@ class EasySettings():
                 # returns ['testoption1=value1', 'option2=testvalue2']
         """
         lst_tmp = []
-        for skey in (list(self.settings.keys())):
+        for skey in list(self.settings.keys()):
             if ssearch_query is None:
-                lst_tmp.append(skey + "=" + str_(self.settings[skey]))
+                lst_tmp.append((skey, self.settings[skey]))
             else:
-                sval = self.settings[skey]
-                # try:
-                #    sval = str_(pickle.loads(sval))
-                # except:
-                #    sval = self.settings[skey]
-                s = skey + "=" + str_(sval)
-                if str_(ssearch_query) in s:
-                    lst_tmp.append(s)
+                val = self.settings[skey]
+                strform = '{}={}'.format(skey, val)
+                if ((str_(ssearch_query) in strform) or
+                   (ssearch_query == skey) or
+                   (ssearch_query == val)):
+                    lst_tmp.append((skey, self.settings[skey]))
         return lst_tmp
     
     def list_options(self, ssearch_query=None):
@@ -501,10 +512,11 @@ class EasySettings():
         if ssearch_query is None:
             return list(self.settings.keys())
         else:
+            query = str_(ssearch_query)
             lst_tmp = []
-            for itm in (list(self.settings.keys())):
-                if ssearch_query in itm:
-                    lst_tmp.append(str_(itm))
+            for itm in list(self.settings.keys()):
+                if query in str_(itm):
+                    lst_tmp.append(itm)
             return lst_tmp
 
     def list_values(self, ssearch_query=None):
@@ -523,22 +535,16 @@ class EasySettings():
             return list(self.settings.values())
         else:
             lst_tmp = []
+            query = str_(ssearch_query)
             for itm in list(self.settings.values()):
                 # <a3
-                # try:
-                #    pval = pickle.loads(itm)
-                #    sval = str_(pval)
-                #    itm = pval
-                # except:
-                #    sval = itm
-                
-                if str_(ssearch_query) in str_(itm):
+                if query in str_(itm):
                     lst_tmp.append(itm)
             return lst_tmp
 
-    def has_option(self, soption):
+    def has_option(self, option):
         """ Returns True if soption is in settings. """
-        return (soption in self.settings.keys())
+        return (option in self.settings.keys())
 
     def has_value(self, value):
         """ Returns True if svalue is in settings. """
@@ -905,14 +911,14 @@ def test_run(stestconfigfile=None):
     print("              set('o', 12): " + str_(es.set('o', 12)))
     print("           set('o', 12.24): " + str_(es.set('o', 12.24)))
     print("         set('o', 123456L): " + str_(es.set('o', long(123456))))
-    print("   set(['o1=v1', 'o2=v2']): " + str_(es.set(['o1=v1', 'o2=v2'])))
+    print("   set(['o1=v1', 'o2=v2']): " + str_(es.set([('o1', 'v1'), ('o2', 'v2')])))
     print("       setsave('o1', 'o2'): " + str_(es.setsave('o1', 'o2')))
     print("   setsave('obool', False): " + str_(es.setsave('obool', False)))
     print("\nGetting:")
     print("                 get('o1'): " + str_(es.get('o1')))
     print("                  get('o'): " + str_(es.get('o')))
     print("           if get('obool'):")
-    if es.get('obool'):
+    if not es.get('obool'):
         print("                             Passed. =" + str_(es.get('obool')))
     else:
         print("                             Failed. =" + str_(es.get('obool')))
