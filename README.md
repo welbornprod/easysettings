@@ -1,14 +1,28 @@
-Easy Settings
+EasySettings
 =============
 
-Easy Settings allows you to easily save and retrieve simple application settings.
+EasySettings allows you to easily save and retrieve simple application settings.
 Handles non-string types like boolean, integer, long, list, as well as normal
 string settings. No sections needed, just set(), get(), and save().
 
 Bug Fixes
 =========
+Version 1.8.8:
+Small changes were made to help compatibility issues between the old and new
+package layouts. You can still do: `from easysettings import easysettings` and
+then `easysettings.easysettings` if you have to. The new method is much better
+though.
 
-Version 1.8.6: Fixed small bug in `setsave()` where `setsave('opt', False)` caused errors.
+
+Version 1.8.7:
+Changed package layout. Instead of `from easysettings.easysettings import easysettings`,
+the simple form of `from easysettings import EasySettings' can be used.
+The main class has been given a proper class name.
+
+
+Version 1.8.6: 
+Fixed small bug in `setsave()` where `setsave('opt', False)` caused errors.
+
 
 Version 1.8.3:
 Previous version fixes previous bugs, where non-string types were not being loaded or saved
@@ -16,7 +30,7 @@ properly. All issues are resolved. The method has been enhanced so debug printin
 'prettier'. Example of 'debug printing' settings:
 
 	from easysettings import easysettings
-	settings = easysettings.easysettings('myconfigfile.conf')
+	settings = EasySettings('myconfigfile.conf')
 	settings.set('option', True)
 	settings.set('option2', ['cjw', 'amy', 'joseph'])
 	print settings
@@ -44,13 +58,13 @@ Example of Easy Settings basic usage:
 	#!/usr/bin/env python
 	# --------------- Creation ----------------
 	
-	from easysettings import easysettings
+	from easysettings import EasySettings
 	
-	settings = easysettings.easysettings("myconfigfile.conf")
+	settings = EasySettings("myconfigfile.conf")
 	
 	# configfile_exists() checks for existing config, and creates one if needed.
 	# ** this function is called automatically now when a filename is passed to easysettings. **
-	# if you wish to disable it, just do: settings = easysettings.easysettings() and set
+	# if you wish to disable it, just do: settings = EasySettings() and set
 	# settings.configfile later.
 	
 	# ------------- Basic Functions -----------
@@ -99,7 +113,7 @@ Other Features:
 Comparison:
 
 	# compare two settings objects
-	settings2 = easysettings.easysettings('myconfigfile2.conf')
+	settings2 = EasySettings('myconfigfile2.conf')
 	
 	if settings.compare_opts(settings2):
 		print "these have the same exact options, values may differ"
@@ -145,7 +159,7 @@ Non-string types were added, so any type that can be pickled can be used as an
 option's value. This includes all the major types like int, long, float, boolean, and list.
 All of these values will be retrieved as the same type that was set:
 
-	es = easysettings.easysettings('myconfigfile.conf)
+	es = EasySettings('myconfigfile.conf)
 	
 	# Boolean
 	es.set("newuser", True)
@@ -168,35 +182,11 @@ All of these values will be retrieved as the same type that was set:
 	# i won't do them all, but if you can pickle it, you can use it with easysettings.
 
 
-You can setup an auto load of the whole easysettings instance using the
-new pickle features like this:
-
-	from easysettings import easysettings
-	es = easysettings.easysettings().load_pickle('myconfigfile.pkl')
-	if es is None:
-		# first time run, need to make an easysettings object.
-		es = easysettings.easysettings() # uses default configfile if none is passed
-		es.name = "My Project"
-		es.version = "1.0"
-		es.set("firstrun", False)
-		es.save_pickle()
-	else:
-		# pickle file was found, everything from the last save_pickle() was loaded.
-		print "Loaded name, version, configfile, and all settings/options/values"
-		
-	# now all you need to do is make sure to save_pickle() before your program exits,
-	# everything you set in easysettings will be retrieved next time.
-	
-	# This is expirimental, and not really needed right now because you can pickle your
-	# own settings object without these functions. The functions are there for possible
-	# future purposes.
-
-
 Errors are more descriptive and can be caught using their proper names:
 
 	try:
 		es.get('option_with_a_possibly_illegal_value')
-	except esGetError as exErr:
+	except easysettings.esGetError as exErr:
 		print "Error getting option!"
 	except Exception as exEx:
 		print "General Error!"
@@ -206,11 +196,11 @@ Automatic Creation:
 ===================
 
 
-If you pass a file name to easysettings(), the ``configfile_exists()`` function is called. This
+If you pass a file name to EasySettings(), the ``configfile_exists()`` function is called. This
 function will create a blank config file if the file doesn't exist, otherwise it will return True.
 To use the 'automatic creation' do this:
 
-	settings = easysettings.easysettings('myconfigfile.conf')
+	settings = EasySettings('myconfigfile.conf')
 	# if file exists, all settings were loaded.
 	# if file did not exist, it was created.
 	# No permissions, disk-full, and other errors are still possible of course
@@ -220,7 +210,7 @@ To use the 'automatic creation' do this:
 You can disable the 'automatic creation' features by not passing a file name, and loading seperately
 like this:
 
-	settings = easysettings.easysettings()
+	settings = EasySettings()
 	settings.configfile = 'myconfigfile.conf'
 	# file has not been created or loaded. 
 	# file must exist before calling 'load_file'
@@ -232,7 +222,7 @@ like this:
 
 This will work in the same way to disable the automatic creation:
 
-	settings = easysettings.easysettings()
+	settings = EasySettings()
 	# file has not been created or loaded.
 	# file 'myconfigfile.conf' must exist before calling load_file()
 	if settings.load_file('myconfigfile.conf'):

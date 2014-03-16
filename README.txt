@@ -8,19 +8,24 @@ string settings. No sections needed, just set(), get(), and save().
 Bug Fixes
 =========
 
+Version 1.8.9:
+Small changes were made to help compatibility issues between the old and new
+package layouts. You can still do: `from easysettings import easysettings` and
+then `easysettings.easysettings()` if you have to. The new method is much better
+though.
+
+
 Version 1.8.7:
-
-Code has been refactored a little, package layout has changed.
-
-Instead of `from easysettings.easysettings import easysettings`, you
-can now just do `from easysettings import EasySettings`.
+Changed package layout. Instead of `from easysettings.easysettings import easysettings`,
+the simple form of `from easysettings import EasySettings' can be used.
 The main class has been given a proper class name.
 
 
-Version 1.8.6:
+Version 1.8.6: 
+Fixed small bug in `setsave()` where `setsave('opt', False)` caused errors.
 
-Fixed small error in setsave() where setsave('opt', False) caused errors.
 
+Version 1.8.3:
 Now supports Python 3.3! The major difference was in the ``pickle`` library.
 ``pickle`` used strings in python 2.7, and bytes in python 3. All pickled objects
 are now using a string format in EasySettings, with the help of 3 little conversion
