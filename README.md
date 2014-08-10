@@ -269,4 +269,4 @@ Website
 Be sure to visit http://welbornprod.com for more projects and information from Welborn Productions.
 
 
-[![I Love Open Source](http://www.iloveopensource.io/images/logo-lightbg.png)](http://www.iloveopensource.io/users/welbornprod)
+[![I Love Open Source](http://www.iloveopensource.io/images/logo-lightbg.png)](http://www.iloveopensource.io/projects/53e6d33587659fce660044f9)
