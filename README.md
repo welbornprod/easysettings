@@ -1,6 +1,7 @@
 EasySettings
 =============
 
+
 EasySettings allows you to easily save and retrieve simple application settings.
 Handles non-string types like boolean, integer, long, list, as well as normal
 string settings. No sections needed, just set(), get(), and save().
@@ -267,3 +268,5 @@ You can view the source for this package at: https://github.com/welbornprod/easy
 Website
 =======
 Be sure to visit http://welbornprod.com for more projects and information from Welborn Productions.
+
+[![I Love Open Source](http://www.iloveopensource.io/images/logo-lightbg.png)](http://www.iloveopensource.io/users/welbornprod)
