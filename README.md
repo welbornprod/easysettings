@@ -30,28 +30,28 @@ properly. All issues are resolved. The method has been enhanced so debug printin
 'prettier'. Example of 'debug printing' settings:
 
 ```python
-	from easysettings import easysettings
-	settings = EasySettings('myconfigfile.conf')
-	settings.set('option', True)
-	settings.set('option2', ['cjw', 'amy', 'joseph'])
-	print settings
-	# this will now print as:
-	# 	{'option': True, 'option2', ['cjw', 'amy', 'joseph']}
-	# instead of pickle's messed up looking strings like:
-	#	{'option': I01\n.  (for a True boolean value), ... }
+from easysettings import easysettings
+settings = EasySettings('myconfigfile.conf')
+settings.set('option', True)
+settings.set('option2', ['cjw', 'amy', 'joseph'])
+print settings
+# this will now print as:
+# 	{'option': True, 'option2', ['cjw', 'amy', 'joseph']}
+# instead of pickle's messed up looking strings like:
+#	{'option': I01\n.  (for a True boolean value), ... }
 ```
 
 This fix also allows you to save values with the newline character in them. So code like
 this will work:
 
 ```python
-	settings.set('mytext', 'this\nstring\n\has\nnewlines.')
-	print settings.get('mytext')
-	# this will result in:
-	# 	this
-	#	string
-	#	has
-	#	newlines.
+settings.set('mytext', 'this\nstring\n\has\nnewlines.')
+print settings.get('mytext')
+# this will result in:
+# 	this
+#	string
+#	has
+#	newlines.
 ```
 
 Examples
@@ -59,38 +59,38 @@ Examples
 Example of Easy Settings basic usage:
 
 ```python
-	#!/usr/bin/env python
-	# --------------- Creation ----------------
+#!/usr/bin/env python
+# --------------- Creation ----------------
 
-	from easysettings import EasySettings
+from easysettings import EasySettings
 
-	settings = EasySettings("myconfigfile.conf")
+settings = EasySettings("myconfigfile.conf")
 
-	# configfile_exists() checks for existing config, and creates one if needed.
-	# ** this function is called automatically now when a filename is passed to easysettings. **
-	# if you wish to disable it, just do: settings = EasySettings() and set
-	# settings.configfile later.
+# configfile_exists() checks for existing config, and creates one if needed.
+# ** this function is called automatically now when a filename is passed to easysettings. **
+# if you wish to disable it, just do: settings = EasySettings() and set
+# settings.configfile later.
 
-	# ------------- Basic Functions -----------
-	# set without saving
-	settings.set("username", "cjw")
-	settings.set("firstrun", False)
+# ------------- Basic Functions -----------
+# set without saving
+settings.set("username", "cjw")
+settings.set("firstrun", False)
 
-	print settings.get("username")
-	# this results in "cjw"
+print settings.get("username")
+# this results in "cjw"
 
-	# check if file is saved
-	if not settings.is_saved():
-		print "you haven't saved the settings to disk yet."
+# check if file is saved
+if not settings.is_saved():
+	print "you haven't saved the settings to disk yet."
 
-	# ...settings are still available even if they haven't
-	#    been saved to disk
+# ...settings are still available even if they haven't
+#    been saved to disk
 
-	# save
-	settings.save()
+# save
+settings.save()
 
-	# you may also set & save in one line...
-	settings.setsave("homedir", "/myuserdir")
+# you may also set & save in one line...
+settings.setsave("homedir", "/myuserdir")
 ```
 
 Other Features:
@@ -118,24 +118,24 @@ Other Features:
 Comparison:
 
 ```python
-	# compare two settings objects
-	settings2 = EasySettings('myconfigfile2.conf')
+# compare two settings objects
+settings2 = EasySettings('myconfigfile2.conf')
 
-	if settings.compare_opts(settings2):
-		print "these have the same exact options, values may differ"
-	if settings.compare_vals(settings2):
-		print "these have the exact same values, options may differ"
+if settings.compare_opts(settings2):
+	print "these have the same exact options, values may differ"
+if settings.compare_vals(settings2):
+	print "these have the exact same values, options may differ"
 
-	if settings == settings2:
-		print "these have the exact same settings/values"
-		# can also be written as settings.compare_settings(settings2)
-		# if you like typing.. :)
+if settings == settings2:
+	print "these have the exact same settings/values"
+	# can also be written as settings.compare_settings(settings2)
+	# if you like typing.. :)
 
-	if settings > settings2:
-		print "settings has more options than settings2"
-	# all of them work ==, !=, <=, >= , > , <
-	# ... the < > features are based on amount of options.
-	#     the = features are based on option names and values.
+if settings > settings2:
+	print "settings has more options than settings2"
+# all of them work ==, !=, <=, >= , > , <
+# ... the < > features are based on amount of options.
+#     the = features are based on option names and values.
 ```
 
 Features
@@ -157,9 +157,9 @@ newbie, so a ``help('EasySettings')`` in the python console will get you started
 The search_query argument in the list functions lets you find settings, options, and values by search string:
 
 ```python
-	mydebugoptions = settings.list_options('debug')
-	# clear all debug values..
-	settings.clear_values(mydebugoptions)
+mydebugoptions = settings.list_options('debug')
+# clear all debug values..
+settings.clear_values(mydebugoptions)
 ```
 
 Non-string types were added, so any type that can be pickled can be used as an
@@ -167,38 +167,38 @@ option's value. This includes all the major types like int, long, float, boolean
 All of these values will be retrieved as the same type that was set:
 
 ```python
-	es = EasySettings('myconfigfile.conf)
+es = EasySettings('myconfigfile.conf)
 
-	# Boolean
-	es.set("newuser", True)
-	if es.get('newuser'):
-		print "now you can use get() as a boolean."
+# Boolean
+es.set("newuser", True)
+if es.get('newuser'):
+	print "now you can use get() as a boolean."
 
-	# Integer
-	es.set('maxwidth', 560)
-	halfwidth = es.get('maxwidth') / 2 # this math works.
+# Integer
+es.set('maxwidth', 560)
+halfwidth = es.get('maxwidth') / 2 # this math works.
 
-	# Float
-	es.set('soda', 1.59)
-	f_withtax = es.get('soda') * 1.08
+# Float
+es.set('soda', 1.59)
+f_withtax = es.get('soda') * 1.08
 
-	# List
-	es.set('users', ['cjw', 'joseph', 'amy']) # lists as settings, very convenient
-	for suser in es.get('users'):
-		print "retrieved user name: " + suser
+# List
+es.set('users', ['cjw', 'joseph', 'amy']) # lists as settings, very convenient
+for suser in es.get('users'):
+	print "retrieved user name: " + suser
 
-	# i won't do them all, but if you can pickle it, you can use it with easysettings.
+# i won't do them all, but if you can pickle it, you can use it with easysettings.
 ```
 
 Errors are more descriptive and can be caught using their proper names:
 
 ```python
-	try:
-		es.get('option_with_a_possibly_illegal_value')
-	except easysettings.esGetError as exErr:
-		print "Error getting option!"
-	except Exception as exEx:
-		print "General Error!"
+try:
+	es.get('option_with_a_possibly_illegal_value')
+except easysettings.esGetError as exErr:
+	print "Error getting option!"
+except Exception as exEx:
+	print "General Error!"
 ```
 
 Automatic Creation:
@@ -210,50 +210,50 @@ function will create a blank config file if the file doesn't exist, otherwise it
 To use the 'automatic creation' do this:
 
 ```python
-	settings = EasySettings('myconfigfile.conf')
-	# if file exists, all settings were loaded.
-	# if file did not exist, it was created.
-	# No permissions, disk-full, and other errors are still possible of course
-	# depending on the machine, or the current directory permissions.
+settings = EasySettings('myconfigfile.conf')
+# if file exists, all settings were loaded.
+# if file did not exist, it was created.
+# No permissions, disk-full, and other errors are still possible of course
+# depending on the machine, or the current directory permissions.
 ```
 
 You can disable the 'automatic creation' features by not passing a file name, and loading seperately
 like this:
 
 ```python
-	settings = EasySettings()
-	settings.configfile = 'myconfigfile.conf'
-	# file has not been created or loaded.
-	# file must exist before calling 'load_file'
-	if settings.load_file():
-		# all settings were loaded.
-	else:
-		# unable to load file for some reason.
+settings = EasySettings()
+settings.configfile = 'myconfigfile.conf'
+# file has not been created or loaded.
+# file must exist before calling 'load_file'
+if settings.load_file():
+	# all settings were loaded.
+else:
+	# unable to load file for some reason.
 ```
 
 This will work in the same way to disable the automatic creation:
 
 ```python
-	settings = EasySettings()
-	# file has not been created or loaded.
-	# file 'myconfigfile.conf' must exist before calling load_file()
-	if settings.load_file('myconfigfile.conf'):
-		# file was loaded.
-		# settings.configfile was set by the load_file() function
-	else:
-		# file could not be loaded.
+settings = EasySettings()
+# file has not been created or loaded.
+# file 'myconfigfile.conf' must exist before calling load_file()
+if settings.load_file('myconfigfile.conf'):
+	# file was loaded.
+	# settings.configfile was set by the load_file() function
+else:
+	# file could not be loaded.
 ```
 
 To check if the file exists without creating it automatically you can do this:
 
 ```python
-	if not settings.configfile_exists(False):
-		print 'config file does not exist, and was not created.'
-	# I actually prefer the os.path.isfile() method if you're not going to automatically
-	# create the file.
-	import os.path
-	if not os.path.isfile(settings.configfile):
-		print 'config file does not exist, and was not created.'
+if not settings.configfile_exists(False):
+	print 'config file does not exist, and was not created.'
+# I actually prefer the os.path.isfile() method if you're not going to automatically
+# create the file.
+import os.path
+if not os.path.isfile(settings.configfile):
+	print 'config file does not exist, and was not created.'
 ```
 
 PyPi Package
@@ -265,13 +265,13 @@ Use pip to install Easy Settings to be used globally.
 Ubuntu instructions to install pip:
 
 ```bash
-    sudo apt-get install python-pip
+sudo apt-get install python-pip
 ```
 
 After that you should be able to install Easy Settings by typing:
 
 ```bash
-    sudo pip install easysettings
+sudo pip install easysettings
 ```
 
 Source Code
