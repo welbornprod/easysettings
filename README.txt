@@ -7,11 +7,10 @@ string settings. No sections needed, just set(), get(), and save().
 
 Bug Fixes
 =========
-
-Version 1.8.9:
+Version 1.8.8:
 Small changes were made to help compatibility issues between the old and new
 package layouts. You can still do: `from easysettings import easysettings` and
-then `easysettings.easysettings()` if you have to. The new method is much better
+then `easysettings.easysettings` if you have to. The new method is much better
 though.
 
 
@@ -21,7 +20,7 @@ the simple form of `from easysettings import EasySettings' can be used.
 The main class has been given a proper class name.
 
 
-Version 1.8.6: 
+Version 1.8.6:
 Fixed small bug in `setsave()` where `setsave('opt', False)` caused errors.
 
 
@@ -30,7 +29,7 @@ Non-string types were not being loaded or saved
 properly. All issues are resolved. The method has been enhanced so debug printing will be
 'prettier'. Example of 'debug printing' settings:
 
-	from easysettings import EasySettings
+	from easysettings import easysettings
 	settings = EasySettings('myconfigfile.conf')
 	settings.set('option', True)
 	settings.set('option2', ['cjw', 'amy', 'joseph'])
@@ -42,7 +41,7 @@ properly. All issues are resolved. The method has been enhanced so debug printin
 
 
 This fix also allows you to save values with the newline character in them. So code like
-this will work::
+this will work:
 
 	settings.set('mytext', 'this\nstring\n\has\nnewlines.')
 	print settings.get('mytext')
@@ -54,78 +53,78 @@ this will work::
 
 Examples
 ========
-Example of Easy Settings basic usage::
+Example of Easy Settings basic usage:
 
 	#!/usr/bin/env python
 	# --------------- Creation ----------------
-	
+
 	from easysettings import EasySettings
-	
+
 	settings = EasySettings("myconfigfile.conf")
-	
+
 	# configfile_exists() checks for existing config, and creates one if needed.
 	# ** this function is called automatically now when a filename is passed to easysettings. **
 	# if you wish to disable it, just do: settings = EasySettings() and set
 	# settings.configfile later.
-	
+
 	# ------------- Basic Functions -----------
 	# set without saving
 	settings.set("username", "cjw")
 	settings.set("firstrun", False)
-	
+
 	print settings.get("username")
 	# this results in "cjw"
-	
+
 	# check if file is saved
 	if not settings.is_saved():
 		print "you haven't saved the settings to disk yet."
-	
+
 	# ...settings are still available even if they haven't
 	#    been saved to disk
-	
+
 	# save
 	settings.save()
-	
+
 	# you may also set & save in one line...
 	settings.setsave("homedir", "/myuserdir")
- 
 
-Other Features::
-    
+
+Other Features:
+
 	# check if setting exists if you want
 	if settings.has_option('username'):
 		print "Yes, settings has 'username'"
-	
+
 	# list settings/options/values
 	mysettings = settings.list_settings()
 	myoptions = settings.list_options()
 	myvalues = settings.list_values()
-		
+
 	# remove setting
 	settings.remove('homedir')
-	
+
 	# clear all option names and values
 	settings.clear()
-	
+
 	# clear all values, leave option names.
 	settings.clear_values()
 
 
-Comparison::
+Comparison:
 
 	# compare two settings objects
 	settings2 = EasySettings('myconfigfile2.conf')
-	
+
 	if settings.compare_opts(settings2):
 		print "these have the same exact options, values may differ"
 	if settings.compare_vals(settings2):
 		print "these have the exact same values, options may differ"
-		
+
 	if settings == settings2:
 		print "these have the exact same settings/values"
 		# can also be written as settings.compare_settings(settings2)
 		# if you like typing.. :)
-		
+
 	if settings > settings2:
 		print "settings has more options than settings2"
 	# all of them work ==, !=, <=, >= , > , <
@@ -137,19 +136,19 @@ Features
 ========
 Easy Settings has the basic features you would expect out of a settings module,
 and it's very easy to use. If your project needs to save simple settings without
-the overhead and complication of other modules then this is for you. Save, load, set, & 
+the overhead and complication of other modules then this is for you. Save, load, set, &
 get are very easy to grasp. The more advanced features are there for you to use,
 but don't get in the way. Settings, options, & values can be listed, searched,
 detected, removed, & cleared.
 
 Easy Settings uses a dictionary to store settings before writing to disk, so you can
-also access settings like a dictionary object using ``mysettings.settings``. The
+also access settings like a dictionary object using ``easysettings.settings``. The
 ``setsave()`` function will save every time you set an option, and ``is_saved()`` will
 tell you whether or not the file has been saved to disk yet. Code is documented for a
 newbie, so a ``help('EasySettings')`` in the python console will get you started.
 
 
-The search_query argument in the list functions lets you find settings, options, and values by search string::
+The search_query argument in the list functions lets you find settings, options, and values by search string:
 
 	mydebugoptions = settings.list_options('debug')
 	# clear all debug values..
@@ -158,32 +157,32 @@ The search_query argument in the list functions lets you find settings, options,
 
 Non-string types were added, so any type that can be pickled can be used as an
 option's value. This includes all the major types like int, long, float, boolean, and list.
-All of these values will be retrieved as the same type that was set::
+All of these values will be retrieved as the same type that was set:
 
 	es = EasySettings('myconfigfile.conf)
-	
+
 	# Boolean
 	es.set("newuser", True)
 	if es.get('newuser'):
 		print "now you can use get() as a boolean."
-	
+
 	# Integer
 	es.set('maxwidth', 560)
 	halfwidth = es.get('maxwidth') / 2 # this math works.
-	
+
 	# Float
 	es.set('soda', 1.59)
 	f_withtax = es.get('soda') * 1.08
-	
+
 	# List
 	es.set('users', ['cjw', 'joseph', 'amy']) # lists as settings, very convenient
 	for suser in es.get('users'):
 		print "retrieved user name: " + suser
-		
+
 	# i won't do them all, but if you can pickle it, you can use it with easysettings.
 
 
-Errors are more descriptive and can be caught using their proper names::
+Errors are more descriptive and can be caught using their proper names:
 
 	try:
 		es.get('option_with_a_possibly_illegal_value')
@@ -199,7 +198,7 @@ Automatic Creation:
 
 If you pass a file name to EasySettings(), the ``configfile_exists()`` function is called. This
 function will create a blank config file if the file doesn't exist, otherwise it will return True.
-To use the 'automatic creation' do this::
+To use the 'automatic creation' do this:
 
 	settings = EasySettings('myconfigfile.conf')
 	# if file exists, all settings were loaded.
@@ -209,11 +208,11 @@ To use the 'automatic creation' do this::
 
 
 You can disable the 'automatic creation' features by not passing a file name, and loading seperately
-like this::
+like this:
 
 	settings = EasySettings()
 	settings.configfile = 'myconfigfile.conf'
-	# file has not been created or loaded. 
+	# file has not been created or loaded.
 	# file must exist before calling 'load_file'
 	if settings.load_file():
 		# all settings were loaded.
@@ -221,7 +220,7 @@ like this::
 		# unable to load file for some reason.
 
 
-This will work in the same way to disable the automatic creation::
+This will work in the same way to disable the automatic creation:
 
 	settings = EasySettings()
 	# file has not been created or loaded.
@@ -233,7 +232,7 @@ This will work in the same way to disable the automatic creation::
 		# file could not be loaded.
 
 
-To check if the file exists without creating it automatically you can do this::
+To check if the file exists without creating it automatically you can do this:
 
 	if not settings.configfile_exists(False):
 		print 'config file does not exist, and was not created.'
@@ -268,3 +267,6 @@ You can view the source for this package at: https://github.com/welbornprod/easy
 Website
 =======
 Be sure to visit http://welbornprod.com for more projects and information from Welborn Productions.
+
+
+[![I Love Open Source](http://www.iloveopensource.io/images/logo-lightbg.png)](http://www.iloveopensource.io/projects/53e6d33587659fce660044f9)
