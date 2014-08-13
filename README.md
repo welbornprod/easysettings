@@ -29,6 +29,7 @@ Non-string types were not being loaded or saved
 properly. All issues are resolved. The method has been enhanced so debug printing will be
 'prettier'. Example of 'debug printing' settings:
 
+```python
 	from easysettings import easysettings
 	settings = EasySettings('myconfigfile.conf')
 	settings.set('option', True)
@@ -38,11 +39,12 @@ properly. All issues are resolved. The method has been enhanced so debug printin
 	# 	{'option': True, 'option2', ['cjw', 'amy', 'joseph']}
 	# instead of pickle's messed up looking strings like:
 	#	{'option': I01\n.  (for a True boolean value), ... }
-
+```
 
 This fix also allows you to save values with the newline character in them. So code like
 this will work:
 
+```python
 	settings.set('mytext', 'this\nstring\n\has\nnewlines.')
 	print settings.get('mytext')
 	# this will result in:
@@ -50,11 +52,13 @@ this will work:
 	#	string
 	#	has
 	#	newlines.
+```
 
 Examples
 ========
 Example of Easy Settings basic usage:
 
+```python
 	#!/usr/bin/env python
 	# --------------- Creation ----------------
 
@@ -87,10 +91,11 @@ Example of Easy Settings basic usage:
 
 	# you may also set & save in one line...
 	settings.setsave("homedir", "/myuserdir")
-
+```
 
 Other Features:
 
+```python
 	# check if setting exists if you want
 	if settings.has_option('username'):
 		print "Yes, settings has 'username'"
@@ -108,10 +113,11 @@ Other Features:
 
 	# clear all values, leave option names.
 	settings.clear_values()
-
+```
 
 Comparison:
 
+```python
 	# compare two settings objects
 	settings2 = EasySettings('myconfigfile2.conf')
 
@@ -130,7 +136,7 @@ Comparison:
 	# all of them work ==, !=, <=, >= , > , <
 	# ... the < > features are based on amount of options.
 	#     the = features are based on option names and values.
-
+```
 
 Features
 ========
@@ -150,15 +156,17 @@ newbie, so a ``help('EasySettings')`` in the python console will get you started
 
 The search_query argument in the list functions lets you find settings, options, and values by search string:
 
+```python
 	mydebugoptions = settings.list_options('debug')
 	# clear all debug values..
 	settings.clear_values(mydebugoptions)
-
+```
 
 Non-string types were added, so any type that can be pickled can be used as an
 option's value. This includes all the major types like int, long, float, boolean, and list.
 All of these values will be retrieved as the same type that was set:
 
+```python
 	es = EasySettings('myconfigfile.conf)
 
 	# Boolean
@@ -180,17 +188,18 @@ All of these values will be retrieved as the same type that was set:
 		print "retrieved user name: " + suser
 
 	# i won't do them all, but if you can pickle it, you can use it with easysettings.
-
+```
 
 Errors are more descriptive and can be caught using their proper names:
 
+```python
 	try:
 		es.get('option_with_a_possibly_illegal_value')
 	except easysettings.esGetError as exErr:
 		print "Error getting option!"
 	except Exception as exEx:
 		print "General Error!"
-
+```
 
 Automatic Creation:
 ===================
@@ -200,16 +209,18 @@ If you pass a file name to EasySettings(), the ``configfile_exists()`` function 
 function will create a blank config file if the file doesn't exist, otherwise it will return True.
 To use the 'automatic creation' do this:
 
+```python
 	settings = EasySettings('myconfigfile.conf')
 	# if file exists, all settings were loaded.
 	# if file did not exist, it was created.
 	# No permissions, disk-full, and other errors are still possible of course
 	# depending on the machine, or the current directory permissions.
-
+```
 
 You can disable the 'automatic creation' features by not passing a file name, and loading seperately
 like this:
 
+```python
 	settings = EasySettings()
 	settings.configfile = 'myconfigfile.conf'
 	# file has not been created or loaded.
@@ -218,10 +229,11 @@ like this:
 		# all settings were loaded.
 	else:
 		# unable to load file for some reason.
-
+```
 
 This will work in the same way to disable the automatic creation:
 
+```python
 	settings = EasySettings()
 	# file has not been created or loaded.
 	# file 'myconfigfile.conf' must exist before calling load_file()
@@ -230,10 +242,11 @@ This will work in the same way to disable the automatic creation:
 		# settings.configfile was set by the load_file() function
 	else:
 		# file could not be loaded.
-
+```
 
 To check if the file exists without creating it automatically you can do this:
 
+```python
 	if not settings.configfile_exists(False):
 		print 'config file does not exist, and was not created.'
 	# I actually prefer the os.path.isfile() method if you're not going to automatically
@@ -241,7 +254,7 @@ To check if the file exists without creating it automatically you can do this:
 	import os.path
 	if not os.path.isfile(settings.configfile):
 		print 'config file does not exist, and was not created.'
-
+```
 
 PyPi Package
 ============
@@ -251,12 +264,15 @@ Full PyPi package available at: http://pypi.python.org/pypi/EasySettings
 Use pip to install Easy Settings to be used globally.
 Ubuntu instructions to install pip:
 
+```bash
     sudo apt-get install python-pip
+```
 
 After that you should be able to install Easy Settings by typing:
 
+```bash
     sudo pip install easysettings
-
+```
 
 Source Code
 ===========
