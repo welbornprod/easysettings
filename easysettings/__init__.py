@@ -17,14 +17,14 @@
          detect if config file exists,
          detect if settings exist,
          pickle/unpickle easysettings.
-         
-  
+
+
 Created on Jan 16, 2013
 
 @author: Christopher Welborn
 '''
 # easy settings version
-__version__ = '1.9.1'
+__version__ = '1.9.2'
 
 # file related imports
 import sys
@@ -51,12 +51,12 @@ if sys.version_info.major == 3:
     long = int
 else:
     PYTHON3 = False
-    
-      
+
+
 class EasySettings():
 
     ''' helper for saving/retrieving settings..
-    
+
           configfile = configuration file to use
           settings   = dict object where settings are stored.
                        settings are retrieved like this:
@@ -69,23 +69,23 @@ class EasySettings():
                          settings.set("username", "cjwelborn")
           name       = name for current project
           version    = version for current project
-         
+
         Example use:
             import easysettings
             settings = easysettings.EasySettings("myconfigfile.conf")
             settings.name = "My Project"
             settings.version = "1.0"
-            # name & version are optional, they are only used in creating 
+            # name & version are optional, they are only used in creating
             # a config file with '# configuration for My Project 1.0' as
             # the first line. if they are None, that line says '# configuration'.
-            
+
             settings.set("username", "cjwelborn")
-            
+
             # settings can be retrieved without saving to disk first...
             s_user = settings.get("username")
-            
+
             # settings can be saved to disk while setting an option
-            settings.setsave("installdir", "/usr/share/easysettings") 
+            settings.setsave("installdir", "/usr/share/easysettings")
     '''
 
     def __init__(self, sconfigfile=None):
@@ -107,12 +107,12 @@ class EasySettings():
             # if filename is passed, automatically check/create file
             self.configfile = sconfigfile
             self.configfile_exists()
-            
+
         # empty setting dictionary
         self.settings = {}
         # load setting from config file
         self.load_file()
-                      
+
     def load_file(self, sfile=None):
         """ reads config file into settings object """
         if sfile is None:
@@ -122,7 +122,7 @@ class EasySettings():
                 sfile = self.configfile
         else:
             self.configfile = sfile
-    
+
         if os.path.isfile(sfile):
             with open(sfile, 'r') as fread:
                 slines = fread.readlines()
@@ -132,7 +132,7 @@ class EasySettings():
                     if "=" in sline:
                         sopt = sline[:sline.index("=")]
                         sval = sline[sline.index("=") + 1:].replace('(es_nl)', '\n')
-                        
+
                         try:
                             # non-string typed value
                             val = safe_pickle_obj(sval)
@@ -146,7 +146,7 @@ class EasySettings():
                 return True
         # failure
         return False
-    
+
     def read_file_noset(self, sfile=None):
         """ reads config file, returns a seperate settings dict.
             not for general use, use load_file() to load your settings
@@ -162,7 +162,7 @@ class EasySettings():
                 sfile = self.configfile
         else:
             self.configfile = sfile
-    
+
         if os.path.isfile(sfile):
             with open(sfile, 'r') as fread:
                 slines = fread.readlines()
@@ -172,7 +172,7 @@ class EasySettings():
                     if "=" in sline:
                         sopt = sline[:sline.index("=")]
                         sval = sline[sline.index("=") + 1:].replace('(es_nl)', '\n')
-                        
+
                         try:
                             # non-string typed value
                             val = safe_pickle_obj(sval)
@@ -181,20 +181,20 @@ class EasySettings():
                             if sval.endswith('\n'):
                                 sval = sval[:-1]
                             val = sval
-                            
+
                         tmp_dict[sopt] = val
                 # success (filled dict)
                 return tmp_dict
         # failure (empty dict)
         return {}
-    
+
     def reload_file(self):
         """ same as load_file, except self.configfile must be set already """
         if self.configfile is None:
             return False
         else:
             return self.load_file(self.configfile)
-  
+
     def save(self, sfile=None):
         """ save config file to disk
             if sfile is given then config is saved to sfile.
@@ -205,7 +205,7 @@ class EasySettings():
                 return False
             else:
                 sfile = self.configfile
-        
+
         try:
             if self.name is None:
                 smsg = ''
@@ -225,7 +225,7 @@ class EasySettings():
                         sval = safe_pickle_str(val).replace('\n', '(es_nl)')
                         # except:
                         #    raise esSaveError('Illegal value!: ' + repr(val))
-                        
+
                     fwrite.write(skey + '=' + sval + '\n')
                 fwrite.flush()
                 # success
@@ -235,19 +235,19 @@ class EasySettings():
             # failed to open file
             raise esSaveError(ex)
             return False
-    
+
     def load_pickle(self, spicklefile=None):
         """ loads a pickle file into self,,,
             file must exist.
             if spicklefile is None, looks for:
                self.configfile.replace('.conf', '.pkl')
-            
+
             also returns the loaded easysettings object,
             so you can do this:
             es = EasySettings().load_pickle("mypickledsettings.pkl")
-            
+
             returns None on failure.
-            
+
         """
         try:
             if spicklefile is None:
@@ -262,18 +262,18 @@ class EasySettings():
                 self.name = es.name
                 self.version = es.version
                 self.settings = es.settings
-                
+
                 return es
         except:
             return None
-        
+
     def save_pickle(self, spicklefile=None):
         """ saves easysettings object into pickle file...
             spicklefile must exist.
-            
+
             if spicklefile is None, saves to:
                 self.configfile.replace('.conf', '.pkl')
-            
+
             returns True on success, False on failure
         """
         try:
@@ -289,7 +289,7 @@ class EasySettings():
             return False
         except:
             return False
-        
+
     def set(self, soption, value=None):
         """ sets a setting in config file.
             option cannot be an empty string ("").
@@ -297,7 +297,7 @@ class EasySettings():
                 (int, float, long, complex, etc.)
             a list of settings can be passed like:
                 settings.set(['opt1=val1', 'opt2=val2'])
-            
+
             ex: settings.set('user', 'cjw')
         """
         if "=" in soption:
@@ -305,12 +305,12 @@ class EasySettings():
 
         if value is None:
             value = ""
-            
+
         try:
             # set list
             if isinstance(soption, list):
                 return self.set_list(soption)
-            
+
             # no empty options!
             if len(soption.replace(' ', '')) == 0:
                 raise esSetError("empty options are not allowed!")
@@ -325,7 +325,7 @@ class EasySettings():
             return True
         except Exception as exsetmain:
             raise esSetError(exsetmain)
-        
+
     def set_list(self, lst_settings):
         """ sets a list of settings...
             format of list should be:
@@ -348,9 +348,9 @@ class EasySettings():
                 except Exception as exsetlist:
                     raise esSetError(exsetlist)
         return True
-                  
+
     def setsave(self, soption, svalue=None):
-        """ sets a setting in config file, and saves the file 
+        """ sets a setting in config file, and saves the file
             ex: settings.setsave('user', 'cjw')
         """
         try:
@@ -361,27 +361,27 @@ class EasySettings():
                                  soption + "=" + str_(svalue))
         except Exception as exset:
             raise Exception(exset)
-      
+
     def get(self, soption, default=None):
-        """ retrieves a setting from config file 
+        """ retrieves a setting from config file
             Returns default (None) if no setting found.
             ex: settings.get('mysetting')
         """
-        
+
         if soption in self.settings.keys():
             return self.settings[soption]
         else:
             if default is None:
                 default = ""
             return default
-        
+
     def remove(self, option):
         """ Remove an option from the current settings
             ex: settings.set('user', 'name')
                 settings.remove('user')
             or you can remove a list of options:
                 settings.remove(['user', 'homedir', ...])
-        
+
         """
         if isinstance(option, list):
             for itm in option:
@@ -393,15 +393,15 @@ class EasySettings():
                 self.settings.pop(option)
                 return True
         return False
-    
+
     def clear(self):
         """ Clears all settings without warning, does not save to disk.
             ex: settings.clear()
         """
-        
+
         self.settings = {}
         return True
-    
+
     def clear_values(self, lst_options=None):
         """ Clear all values by default,
         if lst_options is passed, only options on the list are cleared.
@@ -413,9 +413,9 @@ class EasySettings():
             for sopt in lst_options:
                 if sopt in list(self.settings.keys()):
                     self.settings[sopt] = ""
-        
+
         return True
-        
+
     def configfile_create(self, sfilename=None):
         """ creates a blank config file.
             if sfilename is given then current config file (self.configfile)
@@ -427,7 +427,7 @@ class EasySettings():
                 # it can be set on initialization
                 settings = easysettings.EasySettings("myfile.conf")
                 settings.configfile_create()
-                
+
                 # this creates a different config file, and uses it
                 # for setting/saving
                 settings.configfile_create("myotherfile.conf")
@@ -436,7 +436,7 @@ class EasySettings():
             sfilename = self.configfile
         else:
             self.configfile = sfilename
-            
+
         if self.configfile is None:
             return False
         else:
@@ -449,7 +449,7 @@ class EasySettings():
             fconfig.close()
 
             return True
-    
+
     def configfile_exists(self, bcreateblank=True):
         """ checks to see if config file exists (creates a blank one
             if it doesn't)
@@ -470,13 +470,13 @@ class EasySettings():
                 return self.configfile_create()
             else:
                 return False
-    
+
     def list_settings(self, ssearch_query=None):
         """ Returns a list of all settings.
             ex: # return all settings as a list
                 mysettings = settings.list_settings()
                 # returns: ["setting1=value1", "setting2=value2", ...]
-                
+
                 # return only settings with the string 'test'
                 settings.set('testoption1', 'value1')
                 settings.set('option2', 'testvalue2')
@@ -496,13 +496,13 @@ class EasySettings():
                    (ssearch_query == val)):
                     lst_tmp.append((skey, self.settings[skey]))
         return lst_tmp
-    
+
     def list_options(self, ssearch_query=None):
         """ Returns a list() of all current options.
             ex: # return a list of all options
                 myoptions = settings.list_options()
                 # returns: ["setting1", "setting2", ...]
-                
+
                 # return only options with 'test' in the name
                 settings.set('regularoption', 'regularvalue')
                 settings.set('testoption', 'testvalue')
@@ -524,7 +524,7 @@ class EasySettings():
             ex: # return a list of all values
                 myvalues = settings.list_values()
                 # returns: ["value1", "value2", ...]
-                
+
                 # return only values with 'test' in the value
                 settings.set("option1", "testvalue1")
                 settings.set("option2", "regularvalue2")
@@ -555,19 +555,19 @@ class EasySettings():
         except:
             hasit = False
         return hasit
-       
+
     def is_saved(self):
         """ Returns True if the current settings match what is saved
             in the config file.
         """
         disk_settings = self.read_file_noset()
-        
+
         return self.compare_settings(disk_settings)
-    
+
     def compare_settings(self, settings1, settings2=None):
         """ compare two EasySettings() instances,
             or dicts (easysettings.settings)
-            ex: 
+            ex:
             set1 = easysettings.EasySettings("file1.conf")
             set2 = easysettings.EasySettings("file2.conf")
             set3 = easysettings.EasySettings("file3.conf")
@@ -575,27 +575,27 @@ class EasySettings():
             set1.set("user", "cjw")
             set2.set("user", "joseph")
             set3.set("user", "cjw"
-                
+
             # this compares set2 to self (set1)
             bsettings_match = set1.compare(set2)
-                
+
             # this compares any two, set3 is not compared here
             bsettings_match = set3.compare(set1, set2)
             # ,,,both return False because set1 and set2's 'user' differs
-                
+
             # compare set3 to set1
             bmatching_settings = set3.compare(set1)
             # ...this returns True because set1 and set3's 'user' is the same
-                
+
         """
         # compare to self
         if settings2 is None:
             settings2 = self.settings
         return all([self.compare_opts(settings1, settings2),
                    self.compare_vals(settings1, settings2)])
-        
+
     def compare_opts(self, settings1, settings2=None):
-        """ compare the options/keys of two easysettings instances, 
+        """ compare the options/keys of two easysettings instances,
             or dicts (easysettings.settings)..
             returns False if values don't match.
         """
@@ -603,7 +603,7 @@ class EasySettings():
             b_esinstance = isinstance(settings1, EasySettings)
         except Exception:
             b_esinstance = False
-                
+
         if b_esinstance:
             set1 = settings1.settings
         elif isinstance(settings1, dict):
@@ -615,12 +615,12 @@ class EasySettings():
         # compare to self
         if settings2 is None:
             settings2 = self.settings
-            
+
         try:
             b_esinstance = isinstance(settings2, EasySettings)
         except:
             b_esinstance = False
-                
+
         if b_esinstance:
             set2 = settings2.settings
         elif isinstance(settings2, dict):
@@ -637,9 +637,9 @@ class EasySettings():
             if not itm2 in list(set1.keys()):
                 return False
         return True
-         
+
     def compare_vals(self, settings1, settings2=None):
-        """ compare the values of two easysettings instances, 
+        """ compare the values of two easysettings instances,
             or dicts (easysettings.settings)..
             returns False if values don't match.
         """
@@ -648,7 +648,7 @@ class EasySettings():
             b_esinstance = isinstance(settings1, EasySettings)
         except:
             b_esinstance = False
-                
+
         if b_esinstance:
             set1 = settings1.settings
         elif isinstance(settings1, dict):
@@ -660,12 +660,12 @@ class EasySettings():
         # compare to self
         if settings2 is None:
             settings2 = self.settings
-            
+
         try:
             b_esinstance = isinstance(settings2, EasySettings)
         except:
             b_esinstance = False
-                
+
         if b_esinstance:
             set2 = settings2.settings
         elif isinstance(settings2, dict):
@@ -682,11 +682,11 @@ class EasySettings():
             if not itm2 in list(set1.values()):
                 return False
         return True
-    
+
     def es_version(self):
         """ returns module-level easysettings version string """
         return __version__
-    
+
     def __repr__(self):
         if self.configfile is None:
             sfile = "{No File},"
@@ -694,22 +694,22 @@ class EasySettings():
             sfile = "{" + self.configfile + "},"
         s = "EasySettings(" + sfile + repr(self.settings) + ")"
         return s
-        
+
     def __str__(self):
         return str_(self.settings)
-    
+
     def __eq__(self, other):
         """ tests equality between easysettings instances,
             or dicts (easysettings.settings)
         """
         return self.compare_settings(self.settings, other)
-    
+
     def __ne__(self, other):
         """ test inequality between easysettings instances,
             or dicts (easysettings.settings)
         """
         return (not self.compare_settings(self.settings, other))
-    
+
     def __gt__(self, other):
         """ tests size of settings lists """
 
@@ -743,7 +743,7 @@ class EasySettings():
             raise esCompareError("__lt__ only compares easysettings " +
                                  "instances or dicts.")
             return False
-        
+
         return (len(self.settings) < len(set2))
 
     def __ge__(self, other):
@@ -764,7 +764,7 @@ class EasySettings():
 
         return ((len(self.settings) > len(set2)) or
                 self.compare_settings(set2))
-        
+
         return (len(self.settings) >= len(set2))
 
     def __le__(self, other):
@@ -831,7 +831,7 @@ class esValueError(esError):
 
 
 def str_(data):
-    """ Python 2 and 3 safe str(), 
+    """ Python 2 and 3 safe str(),
         for when Python 3 uses Bytes where Python 2 used Strings.
         Should be used anywhere you would use the str() function.
     """
@@ -854,7 +854,7 @@ def safe_pickle_str(object_):
 
 def safe_pickle_obj(string_):
     """ Returns Python 2 and 3 safe pickle.loads().
-        Will return object from pickle-string, 
+        Will return object from pickle-string,
         Does not need Bytes like Python3 likes.
         Returns unpickled object from pickled-string.
         ex:
@@ -865,7 +865,7 @@ def safe_pickle_obj(string_):
         return pickle.loads(bytearray(string_, 'utf-8'))
     else:
         return pickle.loads(string_)
-    
+
 
 def pickled_str(pickle_dumps_returned):
     """ Returns Python 2 and 3 safe string for converting pickle.dumps().
@@ -873,19 +873,19 @@ def pickled_str(pickle_dumps_returned):
         ex:
             mystring = pickled_str(pickle.dumps(MyObject, 0)
     """
-        
+
     if PYTHON3:
         byte_array = bytearray(pickle_dumps_returned)
         return "".join(chr(int(c)) for c in byte_array)
     else:
         return pickle_dumps_returned
-    
+
 
 def version():
     """ returns version string. """
     return __version__
 
-           
+
 def test_run(stestconfigfile=None):
     """ Runs a test on pretty much every EasySettings function to make
         sure everything works as intended under normal use. Prints to console.
@@ -893,10 +893,10 @@ def test_run(stestconfigfile=None):
     # run a test on all easysettings functions
     if stestconfigfile is None:
         stestconfigfile = os.path.join(sys.path[0], "easysettings_test.conf")
-    
+
     print("checking/creating config file: " + stestconfigfile)
     es = EasySettings(stestconfigfile)
- 
+
     print("\nReading:")
     print("               load_file(): " + str_(es.load_file()))
     print("         read_file_noset(): " + str_(es.read_file_noset()))
@@ -932,17 +932,17 @@ def test_run(stestconfigfile=None):
     print("\nGetting Non-String Query:")
     print("    list_settings(123456L): " + str_(es.list_settings(long(123456))))
     print("      list_values(123456L): " + str_(es.list_values(long(123456))))
-    
+
     print("\nSaved:")
     print("                is_saved(): " + str_(es.is_saved()))
-    
+
     print("\nRemoving/Clearing:")
     print("               remove('o'): " + str_(es.remove('o')))
     print("            remove(['o2']): " + str_(es.remove(['o2'])))
     print("        clear_values('o1'): " + str_(es.clear_values('o1')))
     print("      clear_values(['o1']): " + str_(es.clear_values(['o1'])))
     print("                   clear(): " + str_(es.clear()))
-    
+
     print("\nComparison:")
     es2 = EasySettings(stestconfigfile.replace('.conf', '2.conf'))
     print("            compare_vals(): " + str_(es.compare_vals(es2)))
@@ -953,14 +953,14 @@ def test_run(stestconfigfile=None):
     print("                       >= : " + str_(es >= es2))
     print("                        < : " + str_(es < es2))
     print("                        > : " + str_(es > es2))
-    
+
     print("\nPickle:")
     spicklefile = stestconfigfile.replace('.conf', '.pkl')
     print("             save_pickle(): " + str_(es.save_pickle(spicklefile)))
     print("             load_pickle(): ")
     es = EasySettings().load_pickle(spicklefile)
     print("                            " + str_(es))
-    
+
     print("\nErrors: ")
     lst_errs = [esError("Base Error"), esSetError("Set Error"),
                 esGetError("Get Error"), esCompareError("Compare Error"),
@@ -978,7 +978,7 @@ def test_run(stestconfigfile=None):
             print("    Removed " + stestconfigfile)
         except:
             print("    Unable to remove " + stestconfigfile)
-            
+
     stestconfigfile = stestconfigfile.replace('.conf', '2.conf')
     if os.path.isfile(stestconfigfile):
         try:
@@ -992,10 +992,10 @@ def test_run(stestconfigfile=None):
             print("    Removed " + spicklefile)
         except:
             print("    Unable to remove " + spicklefile)
-            
+
     print("\n\nFinished with test_run().\n")
-    
-   
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("EasySettings v. " + __version__ + '\n')
@@ -1008,7 +1008,7 @@ if __name__ == "__main__":
     else:
         if "-test" in sys.argv:
             # run test
-            
+
             try:
                 test_run()
                 print("All Passed.")

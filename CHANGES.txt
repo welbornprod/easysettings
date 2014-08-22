@@ -1,3 +1,4 @@
+v1.9.2, 8/21/14 -- switching README format (converting using pypandoc when available)
 v1.9.1, 3/16/14 -- fixing incorrect version in __init__.py
 v1.9.0, 3/16/14 -- list_settings()/set_list() now uses a list of tuples. Can now be ran with python -m for basic tests.
 v1.8.9, 3/16/14 -- re-syncing git repo and pypi package.

@@ -7,6 +7,10 @@ string settings. No sections needed, just set(), get(), and save().
 
 Bug Fixes
 =========
+Version 1.9.2:
+Package changes. Switched README to automatically convert markdown to rst
+using pypandoc.
+
 Version 1.8.8:
 Small changes were made to help compatibility issues between the old and new
 package layouts. You can still do: `from easysettings import easysettings` and
