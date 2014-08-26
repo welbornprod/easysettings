@@ -24,7 +24,7 @@ Created on Jan 16, 2013
 @author: Christopher Welborn
 '''
 # easy settings version
-__version__ = '1.9.2'
+__version__ = '1.9.3'
 
 # file related imports
 import sys
@@ -55,8 +55,15 @@ else:
 
 class EasySettings():
 
-    ''' helper for saving/retrieving settings..
+    ''' Helper for saving/retrieving settings..
 
+        Arguments:
+            sconfigfile  : Config file to use (see __init__())
+            name         : Name of your application (for config file header)
+            version      : Version of your application (for config file header)
+            header       : Extra header for config file (description or notes)
+
+        Attributes:
           configfile = configuration file to use
           settings   = dict object where settings are stored.
                        settings are retrieved like this:
@@ -67,8 +74,9 @@ class EasySettings():
                          settings.settings["username"] = "cjwelborn"
                          or:
                          settings.set("username", "cjwelborn")
-          name       = name for current project
-          version    = version for current project
+          name       = name for current project (for config file header)
+          version    = version for current project (for config file header)
+          header     = extra description text (for config file header)
 
         Example use:
             import easysettings
@@ -88,14 +96,39 @@ class EasySettings():
             settings.setsave("installdir", "/usr/share/easysettings")
     '''
 
-    def __init__(self, sconfigfile=None):
-        ''' creates new settings object to work with '''
+    def __init__(self, sconfigfile=None, name=None, version=None, header=None):
+        ''' Creates new settings object to work with.
+            Arguments:
+                sconfigfile  : File name to use for config.
+                               If the file exists, it is loaded.
+                               If the file doesn't exist, it is created.
+                               If no file is given, you must set it manually:
+                                   settings.configfile = 'myfile.conf'
+                                   settings.load_file()
+                               or:
+                                   settings.load_file('myfile.conf')
+                                   ..load_file() assumes the file exists.
+                                   see: .configfile_exists()
+                                        .configfile_create()
+
+
+                name         : Name of your application for the config header.
+                version      : Version of your application for the config header.
+                header       : Extra description/text for the config header.
+                               This can be multiline text. It is converted to
+                               comments if the lines don't start with '#'.
+        '''
         # application info (add your own here, or by accessing object)
         # like settings = easysettings.EasySettings()
         # settings.name = "My Project"
         # settings.version = "1.0"
-        self.name = None
-        self.version = None
+        self.name = name or None
+        self.version = version or None
+
+        # This is an extra message for the top of the config file.
+        # It can be a string or None. The string is added as a comment,
+        # the '# ' will be added to each line if it's not present.
+        self.header = header or None
 
         # default config file (better to set your own file)
         # like: settings.configfile = "myfile.config"
@@ -112,6 +145,25 @@ class EasySettings():
         self.settings = {}
         # load setting from config file
         self.load_file()
+
+    def _parse_header(self):
+        """ Parses self.header and converts it to comment lines.
+            If no self.header is set, None is returned.
+        """
+        if self.header is None:
+            return None
+        headerstr = self.header.strip()
+        if not headerstr:
+            return None
+
+        parsed = []
+        for line in headerstr.split('\n'):
+            stripped = line.lstrip()
+            if stripped.startswith('#'):
+                parsed.append(stripped)
+            else:
+                parsed.append('# {}'.format(stripped))
+        return '\n'.join(parsed)
 
     def load_file(self, sfile=None):
         """ reads config file into settings object """
@@ -206,16 +258,21 @@ class EasySettings():
             else:
                 sfile = self.configfile
 
-        try:
-            if self.name is None:
-                smsg = ''
-            else:
-                smsg = ' for {}'.format(self.name)
-                if self.version:
-                    smsg = '{} v. {}'.format(smsg, self.version)
+        # Set header line (name and version.)
+        if self.name is None:
+            smsg = ''
+        else:
+            smsg = ' for {}'.format(self.name)
+            if self.version:
+                smsg = '{} v. {}'.format(smsg, self.version)
 
+        header = self._parse_header()
+
+        try:
             with open(sfile, 'w') as fwrite:
-                fwrite.write('# configuration{}\n'.format(smsg))
+                fwrite.write('# Configuration{}\n'.format(smsg))
+                if header:
+                    fwrite.write('{}\n'.format(header))
                 for skey in list(self.settings.keys()):
                     val = self.settings[skey]
                     if isinstance(val, str):
@@ -261,6 +318,7 @@ class EasySettings():
                 self.configfile = es.configfile
                 self.name = es.name
                 self.version = es.version
+                self.header = es.header
                 self.settings = es.settings
 
                 return es
@@ -417,10 +475,10 @@ class EasySettings():
         return True
 
     def configfile_create(self, sfilename=None):
-        """ creates a blank config file.
-            if sfilename is given then current config file (self.configfile)
+        """ Creates a blank config file.
+            If sfilename is given then current config file (self.configfile)
                is set to sfilename.
-            if no sfilename is given then current config file is used.
+            If no sfilename is given then current config file is used.
             Returns False if no configfile is set, or on other failure.
             ** Overwrites file if it exists! ***
             ex: # this uses self.configfile as the filename

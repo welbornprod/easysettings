@@ -7,28 +7,56 @@ string settings. No sections needed, just set(), get(), and save().
 
 Bug Fixes
 =========
-Version 1.9.2:
+
+* Version 1.9.3:
+
+Added `EasySettings.header` and initialization arguments.
+
+Usage:
+
+```python
+appdesc = 'My beautiful application.\nUse wisely.'
+settings = EasySettings('myfile.conf', name='MyApp', version='1.0.0', header=appdesc)
+# or for an existing EasySettings() instance:
+# settings.header = appdesc
+settings.setsave('option', 'value')
+```
+
+Now when `save()` is called the configuration file will look like this:
+```
+# Configuration for MyApp v1.0.0
+# My beautiful application.
+# Use wisely.
+option=value
+```
+
+* Version 1.9.2:
+
 Package changes. Switched README to automatically convert markdown to rst
 using pypandoc.
 
-Version 1.8.8:
+* Version 1.8.8:
+
 Small changes were made to help compatibility issues between the old and new
 package layouts. You can still do: `from easysettings import easysettings` and
 then `easysettings.easysettings` if you have to. The new method is much better
 though.
 
 
-Version 1.8.7:
+* Version 1.8.7:
+
 Changed package layout. Instead of `from easysettings.easysettings import easysettings`,
 the simple form of `from easysettings import EasySettings' can be used.
 The main class has been given a proper class name.
 
 
-Version 1.8.6:
+* Version 1.8.6:
+
 Fixed small bug in `setsave()` where `setsave('opt', False)` caused errors.
 
 
-Version 1.8.3:
+* Version 1.8.3:
+
 Non-string types were not being loaded or saved
 properly. All issues are resolved. The method has been enhanced so debug printing will be
 'prettier'. Example of 'debug printing' settings:
@@ -60,6 +88,7 @@ print settings.get('mytext')
 
 Examples
 ========
+
 Example of Easy Settings basic usage:
 
 ```python
@@ -97,7 +126,7 @@ settings.save()
 settings.setsave("homedir", "/myuserdir")
 ```
 
-Other Features:
+###Advanced:
 
 ```python
 	# check if setting exists if you want
@@ -119,7 +148,7 @@ Other Features:
 	settings.clear_values()
 ```
 
-Comparison:
+###Comparison:
 
 ```python
 # compare two settings objects
