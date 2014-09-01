@@ -8,6 +8,13 @@ string settings. No sections needed, just set(), get(), and save().
 Bug Fixes
 =========
 
+* Version 1.9.3-2:
+
+Changed default returns in EasySettings.get().
+None is a valid default return now.
+Empty string will be returned if no default is set,
+but any other default setting will be honored.
+
 * Version 1.9.3:
 
 Added `EasySettings.header` and initialization arguments.

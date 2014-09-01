@@ -24,7 +24,7 @@ Created on Jan 16, 2013
 @author: Christopher Welborn
 '''
 # easy settings version
-__version__ = '1.9.3'
+__version__ = '1.9.3-2'
 
 # file related imports
 import sys
@@ -53,7 +53,20 @@ else:
     PYTHON3 = False
 
 
-class EasySettings():
+class __NoValue(object):
+
+    """ A 'not set yet' value to use other than None. """
+
+    def __str__(self):
+        return '<No Value>'
+
+    def __repr__(self):
+        return self.__str__()
+# Singleton "not set yet" instance.
+NoValue = __NoValue()
+
+
+class EasySettings(object):
 
     ''' Helper for saving/retrieving settings..
 
@@ -420,18 +433,14 @@ class EasySettings():
         except Exception as exset:
             raise Exception(exset)
 
-    def get(self, soption, default=None):
+    def get(self, soption, default=NoValue):
         """ retrieves a setting from config file
             Returns default (None) if no setting found.
             ex: settings.get('mysetting')
         """
-
-        if soption in self.settings.keys():
-            return self.settings[soption]
-        else:
-            if default is None:
-                default = ""
-            return default
+        if default is NoValue:
+            default = ''
+        return self.settings.get(soption, default)
 
     def remove(self, option):
         """ Remove an option from the current settings
