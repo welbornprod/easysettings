@@ -24,7 +24,7 @@ Created on Jan 16, 2013
 @author: Christopher Welborn
 '''
 # easy settings version
-__version__ = '1.9.3-2'
+__version__ = '1.9.3-6'
 
 # file related imports
 import sys
@@ -44,7 +44,8 @@ __all__ = [
 # ...we need this because pickle likes to use bytes in python 3, and strings
 #    in python 2. We will be using strings because they fit the config file
 #    format we have been using. No binary config files allowed here.
-#    see: safe_pickled_str(), safe_pickled_obj(), and their helper pickled_str()
+# see: safe_pickled_str(), safe_pickled_obj(), and their helper
+# pickled_str()
 if sys.version_info.major == 3:
     PYTHON3 = True
     # python 3 needs no long() function.
@@ -98,7 +99,8 @@ class EasySettings(object):
             settings.version = "1.0"
             # name & version are optional, they are only used in creating
             # a config file with '# configuration for My Project 1.0' as
-            # the first line. if they are None, that line says '# configuration'.
+            # the first line. if they are None, that line says
+            # '# configuration'.
 
             settings.set("username", "cjwelborn")
 
@@ -126,7 +128,8 @@ class EasySettings(object):
 
 
                 name         : Name of your application for the config header.
-                version      : Version of your application for the config header.
+                version      : Version of your application for the config
+                               header.
                 header       : Extra description/text for the config header.
                                This can be multiline text. It is converted to
                                comments if the lines don't start with '#'.
@@ -196,7 +199,8 @@ class EasySettings(object):
                     # actual setting?
                     if "=" in sline:
                         sopt = sline[:sline.index("=")]
-                        sval = sline[sline.index("=") + 1:].replace('(es_nl)', '\n')
+                        sval = sline[
+                            sline.index("=") + 1:].replace('(es_nl)', '\n')
 
                         try:
                             # non-string typed value
@@ -236,7 +240,8 @@ class EasySettings(object):
                     # actual setting?
                     if "=" in sline:
                         sopt = sline[:sline.index("=")]
-                        sval = sline[sline.index("=") + 1:].replace('(es_nl)', '\n')
+                        sval = sline[
+                            sline.index("=") + 1:].replace('(es_nl)', '\n')
 
                         try:
                             # non-string typed value
@@ -442,6 +447,82 @@ class EasySettings(object):
             default = ''
         return self.settings.get(soption, default)
 
+    def get_bool(self, option, default=False, strict=False):
+        """ Parses a setting as a boolean, mostly for string values.
+            This is not really needed, because if you set('opt', False),
+            you will get('opt') == False.
+            EasySettings already saves actual boolean values.
+
+            This is for when you want a user friendly string setting, and
+            solves the bool('False') != False problem.
+            It also works with non string values, calling bool(val) instead.
+
+            Arguments:
+                option   : Setting option name to retrieve.
+                default  : Default value to return when the setting hasn't been
+                           set yet. Can be anything.
+                strict   : Strict mode, True string values must be in the
+                           the allowed values ('true', 'yes', 'on', '1').
+                           Values are not case-sensitive.
+                           When turned on, invalid values return the default.
+                           When turned off, anything that is not a False
+                           string value is accepted as True.
+                           Default: False
+            Example:
+                settings.set('opt', 'false')
+                assert settings.get_bool('opt') == False
+
+                settings.set('opt', '0')
+                assert settings.get_bool('opt') == False
+
+                settings.set('opt', 'foo')
+                assert settings.get_bool('opt') == True
+                assert settings.get_bool('opt', strict=True) == None
+
+            Map of True/False values for strings (case-insensitive):
+                False:
+                    'false', 'no', 'off', '0', ''
+                when 'strict' is True:
+                    True:
+                        'true', 'yes', 'on', '1'
+                when 'strict' is False (default):
+                    True:
+                        ..anything else. ('true', 'yes', 'on', '1' included.)
+
+            If the value isn't a string (like: settings.set('opt', 123)),
+            bool(value) is returned.
+
+            Returns True, False, or possibly None when strict mode is used.
+        """
+        optval = self.get(option, NoValue)
+        if optval is NoValue:
+            return default
+
+        truevalues = ('true', 'yes', 'on', '1')
+        falsevalues = ('false', 'no', 'off', '0')
+
+        if hasattr(optval, 'lower'):
+            optval = optval.lower()
+
+            # String values. Empty string is False.
+            if not optval:
+                return False
+
+            if strict:
+                # Strict mode
+                if optval in truevalues:
+                    return True
+                elif optval in falsevalues:
+                    return False
+                # Not an acceptable string value.
+                return default
+
+            # Non-strict mode.
+            return optval not in falsevalues
+
+        # Not a string value.
+        return bool(optval)
+
     def remove(self, option):
         """ Remove an option from the current settings
             ex: settings.set('user', 'name')
@@ -559,8 +640,8 @@ class EasySettings(object):
                 val = self.settings[skey]
                 strform = '{}={}'.format(skey, val)
                 if ((str_(ssearch_query) in strform) or
-                   (ssearch_query == skey) or
-                   (ssearch_query == val)):
+                        (ssearch_query == skey) or
+                        (ssearch_query == val)):
                     lst_tmp.append((skey, self.settings[skey]))
         return lst_tmp
 
@@ -659,7 +740,7 @@ class EasySettings(object):
         if settings2 is None:
             settings2 = self.settings
         return all([self.compare_opts(settings1, settings2),
-                   self.compare_vals(settings1, settings2)])
+                    self.compare_vals(settings1, settings2)])
 
     def compare_opts(self, settings1, settings2=None):
         """ compare the options/keys of two easysettings instances,
@@ -697,11 +778,11 @@ class EasySettings(object):
                                  "or easysettings.settings are allowed!")
             return False
         # do the compare
-        for itm in list(set1.keys()):
-            if not itm in list(set2.keys()):
+        for itm in set1.keys():
+            if itm not in set2.keys():
                 return False
-        for itm2 in list(set2.keys()):
-            if not itm2 in list(set1.keys()):
+        for itm2 in set2.keys():
+            if itm2 not in set1.keys():
                 return False
         return True
 
@@ -721,8 +802,9 @@ class EasySettings(object):
         elif isinstance(settings1, dict):
             set1 = settings1
         else:
-            raise esCompareError("only easysettings " +
-                                 "instances or easysettings.settings are allowed!")
+            raise esCompareError(
+                "only easysetting instances or easysettings.settings"
+                " are allowed!")
             return False
         # compare to self
         if settings2 is None:
@@ -738,15 +820,16 @@ class EasySettings(object):
         elif isinstance(settings2, dict):
             set2 = settings2
         else:
-            raise esCompareError("only easysettings " +
-                                 "instances or easysettings.settings are allowed")
+            raise esCompareError(
+                "only easysettings instances or easysettings.settings"
+                " are allowed")
             return False
         # do the compare
         for itm in list(set1.values()):
-            if not itm in list(set2.values()):
+            if itm not in list(set2.values()):
                 return False
         for itm2 in list(set2.values()):
-            if not itm2 in list(set1.values()):
+            if itm2 not in list(set1.values()):
                 return False
         return True
 
@@ -786,7 +869,7 @@ class EasySettings(object):
             b_esinstance = False
 
         if b_esinstance:
-                set2 = other.settings
+            set2 = other.settings
         elif isinstance(other, dict):
             set2 = other
         else:
@@ -803,12 +886,12 @@ class EasySettings(object):
         except:
             b_esinstance = False
         if b_esinstance:
-                set2 = other.settings
+            set2 = other.settings
         elif isinstance(other, dict):
             set2 = other
         else:
-            raise esCompareError("__lt__ only compares easysettings " +
-                                 "instances or dicts.")
+            raise esCompareError(
+                "__lt__ only compares easysettings instances or dicts.")
             return False
 
         return (len(self.settings) < len(set2))
@@ -818,21 +901,19 @@ class EasySettings(object):
 
         try:
             b_esinstance = isinstance(other, EasySettings)
-        except:
+        except Exception:
             b_esinstance = False
         if b_esinstance:
-                set2 = other.settings
+            set2 = other.settings
         elif isinstance(other, dict):
             set2 = other
         else:
-            raise esCompareError("__lt__ only compares easysettings " +
-                                 "instances or dicts.")
+            raise esCompareError(
+                "__lt__ only compares easysettings instances or dicts.")
             return False
 
         return ((len(self.settings) > len(set2)) or
                 self.compare_settings(set2))
-
-        return (len(self.settings) >= len(set2))
 
     def __le__(self, other):
         """ tests size of settings lists """
@@ -842,12 +923,12 @@ class EasySettings(object):
         except:
             b_esinstance = False
         if b_esinstance:
-                set2 = other.settings
+            set2 = other.settings
         elif isinstance(other, dict):
             set2 = other
         else:
-            raise esCompareError("__lt__ only compares easysettings " +
-                                 "instances or dicts.")
+            raise esCompareError(
+                "__lt__ only compares easysettings instances or dicts.")
             return False
         return ((len(self.settings) < len(set2)) or
                 self.compare_settings(set2))
@@ -905,7 +986,7 @@ def str_(data):
     if PYTHON3:
         # Safer conversion from bytes to string for python 3.
         if (isinstance(data, bytes) or
-           isinstance(data, bytearray)):
+                isinstance(data, bytearray)):
             return str(data, 'utf-8')
     return str(data)
 
@@ -978,7 +1059,8 @@ def test_run(stestconfigfile=None):
     print("              set('o', 12): " + str_(es.set('o', 12)))
     print("           set('o', 12.24): " + str_(es.set('o', 12.24)))
     print("         set('o', 123456L): " + str_(es.set('o', long(123456))))
-    print("   set(['o1=v1', 'o2=v2']): " + str_(es.set([('o1', 'v1'), ('o2', 'v2')])))
+    print("   set(['o1=v1', 'o2=v2']): " +
+          str_(es.set([('o1', 'v1'), ('o2', 'v2')])))
     print("       setsave('o1', 'o2'): " + str_(es.setsave('o1', 'o2')))
     print("   setsave('obool', False): " + str_(es.setsave('obool', False)))
     print("\nGetting:")
@@ -997,7 +1079,8 @@ def test_run(stestconfigfile=None):
     print("         list_options('1'): " + str_(es.list_options('1')))
     print("          list_values('2'): " + str_(es.list_values('2')))
     print("\nGetting Non-String Query:")
-    print("    list_settings(123456L): " + str_(es.list_settings(long(123456))))
+    print("    list_settings(123456L): " +
+          str_(es.list_settings(long(123456))))
     print("      list_values(123456L): " + str_(es.list_values(long(123456))))
 
     print("\nSaved:")
@@ -1071,7 +1154,7 @@ if __name__ == "__main__":
         print("    help('EasySettings') or help('EasySettings.EasySettings')")
         print('To test EasySettings functionality type:')
         print('python easysettings.py -test')
-        exit(0)
+        sys.exit(0)
     else:
         if "-test" in sys.argv:
             # run test
@@ -1079,8 +1162,8 @@ if __name__ == "__main__":
             try:
                 test_run()
                 print("All Passed.")
-                exit(0)
+                sys.exit(0)
             except Exception as ex:
                 print("Failed: ")
                 raise Exception(ex)
-                exit(1)
+                sys.exit(1)

@@ -1,3 +1,6 @@
+v1.9.3-5, 9/20/14 -- Letting get_bool() return the default instead of None for strict mode.
+v1.9.3-4, 9/20/14 -- Small bug fix in get_bool() for non-strict mode.
+v1.9.3-3, 9/20/14 -- Adding get_bool() for parsing string values as booleans.
 v1.9.3-2, 9/01/14 -- Changing default value for get(). None will be honored.
 v1.9.3, 8/26/14 -- Adding .header to EasySettings(). (adds a description to the config file)
 v1.9.2, 8/21/14 -- switching README format (converting using pypandoc when available)

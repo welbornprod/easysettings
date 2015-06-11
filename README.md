@@ -8,6 +8,20 @@ string settings. No sections needed, just set(), get(), and save().
 Bug Fixes
 =========
 
+* Version 1.9.3-5:
+
+Added get_bool(option). Parses string values as booleans in a human friendly way.
+Solves the `bool('false') != False` problem. This is not required because EasySettings
+already saves boolean values. `settings.set('opt', False)` will already do
+`settings.get('opt') == False`. This is for when you want to parse the values
+`true/false`, `yes/no`, `on/off`, `1/0` as a boolean and get the correct result.
+The strings are not case-sensitive.
+
+By default, any value that is not a known `False` value is returned `True`,
+though there is a `strict` option that will return `default` for unknown values.
+
+When used on non-string values `bool(value)` is returned.
+
 * Version 1.9.3-2:
 
 Changed default returns in EasySettings.get().
