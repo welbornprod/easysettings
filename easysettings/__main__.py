@@ -1,3 +1,5 @@
 # Helper for running EasySettings with python -m.
-from easysettings import test_run
-test_run()
+import sys
+from .easy_settings import _print_help
+_print_help()
+sys.exit(1)

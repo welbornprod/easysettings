@@ -2,8 +2,12 @@
 CHANGES.txt
 DESC.txt
 LICENSE.txt
+README.md
 README.txt
 setup.py
 docs/gpl.txt
 easysettings/__init__.py
 easysettings/__main__.py
+easysettings/easy_settings.py
+easysettings/json_settings.py
+easysettings/test_easysettings.py

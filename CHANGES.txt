@@ -1,3 +1,13 @@
+v2.0.3 7/14/15 -- Documentation fixes.
+v2.0.2 7/14/15 -- repr() for EasySettings updated.
+v2.0.1 7/14/15 -- Documentation updates.
+v2.0.0 7/14/15 -- Real unit tests, and JSONSettings/JSONMixin.
+v1.9.3-5, 9/20/14 -- Letting get_bool() return the default instead of None for strict mode.
+v1.9.3-4, 9/20/14 -- Small bug fix in get_bool() for non-strict mode.
+v1.9.3-3, 9/20/14 -- Adding get_bool() for parsing string values as booleans.
+v1.9.3-2, 9/01/14 -- Changing default value for get(). None will be honored.
+v1.9.3, 8/26/14 -- Adding .header to EasySettings(). (adds a description to the config file)
+v1.9.2, 8/21/14 -- switching README format (converting using pypandoc when available)
 v1.9.1, 3/16/14 -- fixing incorrect version in __init__.py
 v1.9.0, 3/16/14 -- list_settings()/set_list() now uses a list of tuples. Can now be ran with python -m for basic tests.
 v1.8.9, 3/16/14 -- re-syncing git repo and pypi package.
