@@ -40,13 +40,13 @@ class EasySettingsTests(unittest.TestCase):
         settings.set_list(self.test_values)
 
         self.assertListEqual(
-            list(settings.settings),
+            sorted(settings.settings),
             sorted(settings.list_options()),
             msg='settings.list_options() differs from list(settings)'
         )
 
         self.assertListEqual(
-            list(settings.settings.values()),
+            sorted(settings.settings.values()),
             sorted(settings.list_values()),
             msg='settings.list_values() differs from list(settings.values())'
         )

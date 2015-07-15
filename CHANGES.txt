@@ -1,3 +1,6 @@
+v2.0.3 7/14/15 -- Documentation fixes.
+v2.0.2 7/14/15 -- repr() for EasySettings updated.
+v2.0.1 7/14/15 -- Documentation updates.
 v2.0.0 7/14/15 -- Real unit tests, and JSONSettings/JSONMixin.
 v1.9.3-5, 9/20/14 -- Letting get_bool() return the default instead of None for strict mode.
 v1.9.3-4, 9/20/14 -- Small bug fix in get_bool() for non-strict mode.

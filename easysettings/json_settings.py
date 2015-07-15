@@ -9,7 +9,11 @@
 """
 
 import json
-from collections import UserDict
+try:
+    from collections import UserDict
+except ImportError:
+    # Python 2..
+    from UserDict import UserDict
 
 __all__ = ['JSONMixin', 'JSONSettings']
 

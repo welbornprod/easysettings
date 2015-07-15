@@ -4,7 +4,7 @@ import sys
 import pickle
 
 # easy settings version
-__version__ = '2.0.0'
+__version__ = '2.0.3'
 
 # Python 3 compatibility flag
 # ...we need this because pickle likes to use bytes in python 3, and strings
@@ -35,7 +35,7 @@ NoValue = __NoValue()
 
 class EasySettings(object):
 
-    ''' Helper for saving/retrieving settings..
+    """ Helper for saving/retrieving settings..
 
         Arguments:
             sconfigfile  : Config file to use (see __init__())
@@ -75,10 +75,10 @@ class EasySettings(object):
 
             # settings can be saved to disk while setting an option
             settings.setsave("installdir", "/usr/share/easysettings")
-    '''
+    """
 
     def __init__(self, sconfigfile=None, name=None, version=None, header=None):
-        ''' Creates new settings object to work with.
+        """ Creates new settings object to work with.
             Arguments:
                 sconfigfile  : File name to use for config.
                                If the file exists, it is loaded.
@@ -99,7 +99,7 @@ class EasySettings(object):
                 header       : Extra description/text for the config header.
                                This can be multiline text. It is converted to
                                comments if the lines don't start with '#'.
-        '''
+        """
         # application info (add your own here, or by accessing object)
         # like settings = easysettings.EasySettings()
         # settings.name = "My Project"
@@ -128,24 +128,52 @@ class EasySettings(object):
         # load setting from config file
         self.load_file()
 
+    def _build_header(self):
+        """ Build the first line for the config file, a comment line
+            that describes what the config file is for.
+            This uses self.name and self.version when available.
+            Returns a string, with no newline, ready to be written to the file.
+        """
+        lines = ['# Configuration']
+        if self.name:
+            lines.append('for {}'.format(self.name))
+            if self.version:
+                lines.append('v. {}'.format(self.version))
+        return ' '.join(lines)
+
     def _parse_header(self):
         """ Parses self.header and converts it to comment lines.
             If no self.header is set, None is returned.
+            self.header may be a str with newlines or a list/tuple of lines.
         """
         if self.header is None:
             return None
-        headerstr = self.header.strip()
-        if not headerstr:
+        if isinstance(self.header, (list, tuple)):
+            headerlines = self.header
+        else:
+            headerlines = self.header.strip().split('\n')
+
+        if not headerlines:
             return None
 
         parsed = []
-        for line in headerstr.split('\n'):
+        for line in headerlines:
             stripped = line.lstrip()
             if stripped.startswith('#'):
                 parsed.append(stripped)
             else:
                 parsed.append('# {}'.format(stripped))
         return '\n'.join(parsed)
+
+    def copy(self):
+        """ Return a separate copy of this EasySettings object. """
+        new_es = EasySettings()
+        new_es.configfile = self.configfile
+        new_es.name = self.name
+        new_es.version = self.version
+        new_es.header = self.header
+        new_es.settings = self.settings.copy()
+        return new_es
 
     def load_file(self, sfile=None):
         """ reads config file into settings object """
@@ -163,10 +191,10 @@ class EasySettings(object):
                 # cycle thru lines
                 for sline in slines:
                     # actual setting?
-                    if "=" in sline:
+                    if '=' in sline:
                         sopt = sline[:sline.index("=")]
                         sval = sline[
-                            sline.index("=") + 1:].replace('(es_nl)', '\n')
+                            sline.index('=') + 1:].replace('(es_nl)', '\n')
 
                         try:
                             # non-string typed value
@@ -205,9 +233,9 @@ class EasySettings(object):
                 for sline in slines:
                     # actual setting?
                     if "=" in sline:
-                        sopt = sline[:sline.index("=")]
+                        sopt = sline[:sline.index('=')]
                         sval = sline[
-                            sline.index("=") + 1:].replace('(es_nl)', '\n')
+                            sline.index('=') + 1:].replace('(es_nl)', '\n')
 
                         try:
                             # non-string typed value
@@ -243,18 +271,12 @@ class EasySettings(object):
                 sfile = self.configfile
 
         # Set header line (name and version.)
-        if self.name is None:
-            smsg = ''
-        else:
-            smsg = ' for {}'.format(self.name)
-            if self.version:
-                smsg = '{} v. {}'.format(smsg, self.version)
-
+        msg = self._build_header()
         header = self._parse_header()
 
         try:
             with open(sfile, 'w') as fwrite:
-                fwrite.write('# Configuration{}\n'.format(smsg))
+                fwrite.write('{}\n'.format(msg))
                 if header:
                     fwrite.write('{}\n'.format(header))
                 for skey in list(self.settings.keys()):
@@ -342,11 +364,11 @@ class EasySettings(object):
 
             ex: settings.set('user', 'cjw')
         """
-        if "=" in soption:
+        if '=' in soption:
             raise esSetError("no '=' characters allowed in options!")
 
         if value is None:
-            value = ""
+            value = ''
 
         try:
             # set list
@@ -355,7 +377,7 @@ class EasySettings(object):
 
             # no empty options!
             if len(soption.replace(' ', '')) == 0:
-                raise esSetError("empty options are not allowed!")
+                raise esSetError('Empty options are not allowed!')
 
             # dict must be able to hold it
             try:
@@ -377,14 +399,15 @@ class EasySettings(object):
 
         for sset in lst_settings:
             if sset:
-                if len(sset) == 2:
+                setlen = len(sset)
+                if setlen == 2:
                     opt, val = sset
-                elif len(sset) == 1:
+                elif setlen == 1:
                     opt = sset[0]
                     val = None
                 else:
-                    raise ValueError('Expecting list of tuples! '
-                                     '[(opt, val), (opt, val), ..]')
+                    errmsg = 'Expecting list of tuples! [ (opt, val), ... ]'
+                    raise ValueError(errmsg)
                 try:
                     self.set(opt, val)
                 except Exception as exsetlist:
@@ -399,8 +422,11 @@ class EasySettings(object):
             if self.set(soption, svalue):
                 return self.save()
             else:
-                raise esSetError("unable to set option: " +
-                                 soption + "=" + str_(svalue))
+                errmsg = 'Unable to set option: {}={!r}'.format(
+                    soption,
+                    svalue
+                )
+                raise esSetError(errmsg)
         except Exception as exset:
             raise Exception(exset)
 
@@ -560,16 +586,15 @@ class EasySettings(object):
 
         if self.configfile is None:
             return False
-        else:
-            if self.name is None:
-                smsg = ""
-            else:
-                smsg = " for " + self.name
-            fconfig = open(self.configfile, 'w')
-            fconfig.write("# configuration" + smsg + "\n")
-            fconfig.close()
 
-            return True
+        msg = self._build_header()
+        header = self._parse_header()
+
+        with open(self.configfile, 'w') as f:
+            f.write('{}\n'.format(msg))
+            if header:
+                f.write('{}\n'.format(header))
+        return True
 
     def configfile_exists(self, bcreateblank=True):
         """ checks to see if config file exists (creates a blank one
@@ -811,13 +836,20 @@ class EasySettings(object):
         """ returns module-level easysettings version string """
         return __version__
 
+    def __getitem__(self, key):
+        """ Shortcut to EasySettings.get() using dict/list behavior.
+            This will raise a KeyError if the setting cannot be found.
+        """
+        notset = object()
+        val = self.get(key, notset)
+        if val is notset:
+            raise KeyError('Option not found: {!r}'.format(key))
+        return val
+
     def __repr__(self):
-        if self.configfile is None:
-            sfile = "{No File},"
-        else:
-            sfile = "{" + self.configfile + "},"
-        s = "EasySettings(" + sfile + repr(self.settings) + ")"
-        return s
+        return 'EasySettings({!r}, {!r})'.format(
+            self.configfile or '<No File>',
+            self.settings)
 
     def __str__(self):
         return str_(self.settings)
@@ -1008,8 +1040,11 @@ def version():
     return __version__
 
 
-if __name__ == '__main__':
+def _print_help():
     print('EasySettings v. {}\n'.format(__version__))
     print('For help with EasySettings open a python interpreter and type:')
-    print('    help(\'EasySettings\') or help(\'EasySettings.EasySettings\')')
-    sys.exit(0)
+    print('    help(\'easysettings\') or help(\'easysettings.EasySettings\')')
+
+if __name__ == '__main__':
+    _print_help()
+    sys.exit(1)
