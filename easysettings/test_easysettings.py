@@ -19,7 +19,9 @@ from . import EasySettings, JSONSettings
 
 
 class EasySettingsTests(unittest.TestCase):
+
     """ Tests EasySettings functionality. """
+
     def setUp(self):
         # Set up a test configuration file to work with.
         fd, fname = tempfile.mkstemp(suffix='.conf', prefix='easysettings.')
@@ -32,6 +34,55 @@ class EasySettingsTests(unittest.TestCase):
             ('option2', 'value2'),
             ('option3', 'value3')
         ]
+
+    def test_comparison_ops(self):
+        """ EasySettings comparison operators hold true """
+        es1 = EasySettings()
+        es1.set_list(self.test_values)
+        es2 = EasySettings()
+        es2.set_list(self.test_values)
+        self.assertEqual(
+            es1,
+            es2,
+            msg='EasySettings with the same options/values are not equal!')
+        # Change the first value.
+        es2.set(es2.list_options()[0], 'MODIFED')
+        self.assertNotEqual(
+            es1,
+            es2,
+            msg='EasySettings with different values compared equal!')
+
+        # Add a value.
+        es2.set('new_option', 'new_value')
+        self.assertGreater(
+            es2,
+            es1,
+            msg='EasySettings with more options was not greater!')
+        self.assertLess(
+            es1,
+            es2,
+            msg='EasySettings with less options was not less!')
+
+        # Reset to equal.
+        es2 = es1.copy()
+        self.assertGreaterEqual(
+            es1,
+            es2,
+            msg='EasySettings with same options/values not greater or equal!')
+        self.assertLessEqual(
+            es1,
+            es2,
+            msg='EasySettings with same options/values was not less or equal!')
+        # Add an option.
+        es2.set('new_option', 'new_value')
+        self.assertGreaterEqual(
+            es2,
+            es1,
+            msg='EasySettings with more options was not greater or equal!')
+        self.assertLessEqual(
+            es1,
+            es2,
+            msg='EasySettings with less options was not less or equal!')
 
     def test_list_values(self):
         """ EasySettings handles lists of options and values """
@@ -77,7 +128,7 @@ class EasySettingsTests(unittest.TestCase):
         )
 
     def test_load_save(self):
-        """ Make sure EasySettings loads and saves """
+        """ EasySettings loads and saves valid config files """
         settings = EasySettings(self.testfile)
         self.assertTrue(
             settings.load_file(),
@@ -145,8 +196,8 @@ class EasySettingsTests(unittest.TestCase):
         """ EasySettings sets/reads str and non-str values. """
 
         settings = EasySettings()
-        test_values = (
-            (str(type(o)), o) for o in (
+        test_values = [
+            ('opt{}'.format(i), v) for i, v in enumerate((
                 'hello world',
                 1337,
                 3.14,
@@ -155,13 +206,27 @@ class EasySettingsTests(unittest.TestCase):
                 {'key': 'value'},
                 True
             ))
+        ]
+
         for opt, val in test_values:
             settings.set(opt, val)
             self.assertEqual(
                 val,
                 settings.settings[opt],
-                msg='Failed to set value ({}): {}'.format(opt, val)
+                msg='Failed to set value ({}): {}'.format(type(opt), val)
             )
+        settings.save(self.testfile)
+
+        # Reload from disk
+        settings = EasySettings(self.testfile)
+        self.assertTrue(
+            bool(settings),
+            msg='Failed to load settings for test!')
+
+        self.assertListEqual(
+            sorted(test_values),
+            sorted(settings.list_settings()),
+            msg='Settings differed after saving to disk!')
 
 
 class JSONSettingsTests(unittest.TestCase):
@@ -175,7 +240,7 @@ class JSONSettingsTests(unittest.TestCase):
         self.testfile = fname
 
     def test_json_load_save(self):
-        """ Make sure JSON loads and saves with JSONSettings """
+        """ JSONSettings loads and saves JSON files """
         settings = JSONSettings.from_file(self.testfile)
         self.assertDictEqual(
             self.rawdict, settings.data,

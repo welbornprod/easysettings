@@ -11,6 +11,10 @@ settings in JSON format.
 Bug Fixes
 ---------
 
+* Version 2.0.4:
+
+Simplization/clean-up, added unit tests for comparison operators.
+
 * Version 2.0.2:
 
 The `repr()`for EasySettings was modified slightly to better represent python
