@@ -5,7 +5,7 @@ EasySettings Setup
 @author: Christopher Welborn
 '''
 
-from distutils.core import setup
+from setuptools import setup
 defaultdesc = 'Easily set and retrieve application settings.'
 try:
     import pypandoc
