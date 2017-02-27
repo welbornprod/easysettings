@@ -10,10 +10,10 @@ __version__ = '2.0.4'
 # Python 3 compatibility flag
 # ...we need this because pickle likes to use bytes in python 3, and strings
 #    in python 2. We will be using strings because they fit the config file
-#    format we have been using. No binary config files allowed here.
+#    format we have been using.
 # see: safe_pickled_str(), safe_pickled_obj(), and their helper
 # pickled_str()
-if sys.version_info.major == 3:
+if sys.version_info.major > 2:
     PYTHON3 = True
     # python 3 needs no long() function.
     long = int
@@ -30,6 +30,8 @@ class __NoValue(object):
 
     def __repr__(self):
         return self.__str__()
+
+
 # Singleton "not set yet" instance.
 NoValue = __NoValue()
 
@@ -41,7 +43,7 @@ class EasySettings(object):
         Arguments:
             sconfigfile  : Config file to use (see __init__())
             name         : Name of your application (for config file header)
-            version      : Version of your application (for config file header)
+            version      : Version of your application (for config header)
             header       : Extra header for config file (description or notes)
 
         Attributes:
@@ -81,7 +83,8 @@ class EasySettings(object):
     # Should stay consistent with the strings in self._build_header().
     confpat = re.compile(r'# Configuration for (.+)')
 
-    def __init__(self, sconfigfile=None, name=None, version=None, header=None):
+    def __init__(
+            self, sconfigfile=None, name=None, version=None, header=None):
         """ Creates new settings object to work with.
             Arguments:
                 sconfigfile  : File name to use for config.
@@ -132,11 +135,15 @@ class EasySettings(object):
         # load setting from config file
         self.load_file()
 
+    def __bool__(self):
+        """ An EasySettings is truthy if it's settings are truthy. """
+        return bool(self.settings)
+
     def _build_header(self):
         """ Build the first line for the config file, a comment line
             that describes what the config file is for.
             This uses self.name and self.version when available.
-            Returns a string, with no newline, ready to be written to the file.
+            Returns a str, with no newline, ready to be written to the file.
         """
         lines = ['# Configuration']
         if self.name:
@@ -206,8 +213,9 @@ class EasySettings(object):
         elif isinstance(settings1, dict):
             set1 = settings1
         else:
-            raise esCompareError("only easysettings instances " +
-                                 " or easysettings.settings are allowed!")
+            raise esCompareError(
+                'Expecting EasySettings, or EasySettings.settings.'
+            )
             return False
         # compare to self
         if settings2 is None:
@@ -223,17 +231,12 @@ class EasySettings(object):
         elif isinstance(settings2, dict):
             set2 = settings2
         else:
-            raise esCompareError("only easysettings instances " +
-                                 "or easysettings.settings are allowed!")
+            raise esCompareError(
+                'Expecting EasySettings, or EasySettings.settings.'
+            )
             return False
         # do the compare
-        for itm in set1.keys():
-            if itm not in set2.keys():
-                return False
-        for itm2 in set2.keys():
-            if itm2 not in set1.keys():
-                return False
-        return True
+        return set(set1) == set(set2)
 
     def compare_settings(self, settings1, settings2=None):
         """ compare two EasySettings() instances,
@@ -401,8 +404,8 @@ class EasySettings(object):
 
             Arguments:
                 option   : Setting option name to retrieve.
-                default  : Default value to return when the setting hasn't been
-                           set yet. Can be anything.
+                default  : Default value to return when the setting hasn't
+                           been set yet. Can be anything.
                 strict   : Strict mode, True string values must be in the
                            the allowed values ('true', 'yes', 'on', '1').
                            Values are not case-sensitive.
@@ -475,7 +478,7 @@ class EasySettings(object):
 
         try:
             hasit = (value in self.settings.values())
-        except:
+        except Exception:
             hasit = False
         return hasit
 
@@ -686,11 +689,7 @@ class EasySettings(object):
                     if isinstance(val, str):
                         sval = val.replace('\n', '(es_nl)')
                     else:
-                        # try:
                         sval = safe_pickle_str(val).replace('\n', '(es_nl)')
-                        # except:
-                        #    raise esSaveError('Illegal value!: ' + repr(val))
-
                     fwrite.write(skey + '=' + sval + '\n')
                 fwrite.flush()
                 # success
@@ -735,7 +734,7 @@ class EasySettings(object):
             ex: settings.set('user', 'cjw')
         """
         if '=' in soption:
-            raise esSetError("no '=' characters allowed in options!")
+            raise esSetError('No \'=\' characters allowed in options!')
 
         if value is None:
             value = ''
@@ -763,7 +762,7 @@ class EasySettings(object):
     def set_list(self, lst_settings):
         """ sets a list of settings...
             format of list should be:
-                [('option1', 'value1'), ('option2',), ('option3', 'val3'), ...]
+                [('opt1', 'val1'), ('opt2',), ('opt3', 'val3'), ...]
             (same format that list_settings() outputs...)
         """
 
@@ -869,8 +868,9 @@ class EasySettings(object):
         elif isinstance(other, dict):
             set2 = other
         else:
-            raise esCompareError("__lt__ only compares easysettings " +
-                                 "instances or dicts.")
+            raise esCompareError(
+                '__lt__ only compares EasySettings instances or dicts.'
+            )
             return False
         return (len(self.settings) > len(set2))
 
@@ -887,7 +887,8 @@ class EasySettings(object):
             set2 = other
         else:
             raise esCompareError(
-                "__lt__ only compares easysettings instances or dicts.")
+                '__lt__ only compares easysettings instances or dicts.'
+            )
             return False
 
         return (len(self.settings) < len(set2))
@@ -905,7 +906,8 @@ class EasySettings(object):
             set2 = other
         else:
             raise esCompareError(
-                "__lt__ only compares easysettings instances or dicts.")
+                '__lt__ only compares easysettings instances or dicts.'
+            )
             return False
 
         return ((len(self.settings) > len(set2)) or
@@ -924,7 +926,8 @@ class EasySettings(object):
             set2 = other
         else:
             raise esCompareError(
-                "__lt__ only compares easysettings instances or dicts.")
+                '__lt__ only compares easysettings instances or dicts.'
+            )
             return False
         return ((len(self.settings) < len(set2)) or
                 self.compare_settings(set2))
@@ -1019,8 +1022,7 @@ def str_(data):
     """
     if PYTHON3:
         # Safer conversion from bytes to string for python 3.
-        if (isinstance(data, bytes) or
-                isinstance(data, bytearray)):
+        if isinstance(data, (bytes, bytearray)):
             return str(data, 'utf-8')
     return str(data)
 
@@ -1031,9 +1033,12 @@ def version():
 
 
 def _print_help():
-    print('EasySettings v. {}\n'.format(__version__))
-    print('For help with EasySettings open a python interpreter and type:')
-    print('    help(\'easysettings\') or help(\'easysettings.EasySettings\')')
+    print('\n'.join((
+        'EasySettings v. {}',
+        'For help with EasySettings open a Python interpreter and type:',
+        '    help(\'easysettings\') or help(\'easysettings.EasySettings\')',
+    )).format(__version__))
+
 
 if __name__ == '__main__':
     _print_help()

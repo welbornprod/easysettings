@@ -6,17 +6,19 @@
 
     -Christopher Welborn 07-14-2015
 """
-
+from __future__ import print_function
 import json
 import os
 import sys
 import tempfile
 import unittest
 
-from . import EasySettings, JSONSettings
+from . import version, EasySettings, JSONSettings
 
-# TODO: Comparison tests for EasySettings.
-
+print('\n'.join((
+    'Testing EasySettings v. {esver}',
+    'Using Python {v.major}.{v.minor}.{v.micro}.',
+)).format(esver=version(), v=sys.version_info))
 
 class EasySettingsTests(unittest.TestCase):
 
@@ -44,45 +46,53 @@ class EasySettingsTests(unittest.TestCase):
         self.assertEqual(
             es1,
             es2,
-            msg='EasySettings with the same options/values are not equal!')
+            msg='EasySettings with the same options/values are not equal!'
+        )
         # Change the first value.
         es2.set(es2.list_options()[0], 'MODIFED')
         self.assertNotEqual(
             es1,
             es2,
-            msg='EasySettings with different values compared equal!')
+            msg='EasySettings with different values compared equal!'
+        )
 
         # Add a value.
         es2.set('new_option', 'new_value')
         self.assertGreater(
             es2,
             es1,
-            msg='EasySettings with more options was not greater!')
+            msg='EasySettings with more options was not greater!'
+        )
         self.assertLess(
             es1,
             es2,
-            msg='EasySettings with less options was not less!')
+            msg='EasySettings with less options was not less!'
+        )
 
         # Reset to equal.
         es2 = es1.copy()
         self.assertGreaterEqual(
             es1,
             es2,
-            msg='EasySettings with same options/values not greater or equal!')
+            msg='EasySettings with same options/values not greater or equal!'
+        )
         self.assertLessEqual(
             es1,
             es2,
-            msg='EasySettings with same options/values was not less or equal!')
+            msg='EasySettings with same options/values was not less or equal!'
+        )
         # Add an option.
         es2.set('new_option', 'new_value')
         self.assertGreaterEqual(
             es2,
             es1,
-            msg='EasySettings with more options was not greater or equal!')
+            msg='EasySettings with more options was not greater or equal!'
+        )
         self.assertLessEqual(
             es1,
             es2,
-            msg='EasySettings with less options was not less or equal!')
+            msg='EasySettings with less options was not less or equal!'
+        )
 
     def test_list_values(self):
         """ EasySettings handles lists of options and values """
