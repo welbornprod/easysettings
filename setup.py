@@ -28,11 +28,11 @@ else:
 
 setup(
     name='EasySettings',
-    version='2.0.4',
+    version='2.1.0',
     author='Christopher Welborn',
     author_email='cj@welbornprod.com',
     packages=['easysettings'],
-    url='http://pypi.python.org/pypi/EasySettings/',
+    url='https://github.com/welbornprod/easysettings',
     license='LICENSE.txt',
     description=open('DESC.txt').read(),
     long_description=longdesc,

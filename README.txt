@@ -12,6 +12,11 @@ settings in JSON format.
 Bug Fixes
 ---------
 
+-  Version 2.1.0:
+
+Added ``bool(EasySettings())``. It's the same as
+``bool(EasySettings().settings)``. Some other code was linted.
+
 -  Version 2.0.4:
 
 Simplization/clean-up, added unit tests for comparison operators.
