@@ -1,3 +1,5 @@
+v2.1.0 02/26/17 -- bool(EasySettings) now works. Some code was linted.
+v2.0.4 7/18/15 -- Simplization/clean-up, added unit tests for comparison operators.
 v2.0.3 7/14/15 -- Documentation fixes.
 v2.0.2 7/14/15 -- repr() for EasySettings updated.
 v2.0.1 7/14/15 -- Documentation updates.

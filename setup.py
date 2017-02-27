@@ -5,7 +5,7 @@ EasySettings Setup
 @author: Christopher Welborn
 '''
 
-from distutils.core import setup
+from setuptools import setup
 defaultdesc = 'Easily set and retrieve application settings.'
 try:
     import pypandoc
@@ -28,11 +28,11 @@ else:
 
 setup(
     name='EasySettings',
-    version='2.0.3',
+    version='2.1.0',
     author='Christopher Welborn',
     author_email='cj@welbornprod.com',
     packages=['easysettings'],
-    url='http://pypi.python.org/pypi/EasySettings/',
+    url='https://github.com/welbornprod/easysettings',
     license='LICENSE.txt',
     description=open('DESC.txt').read(),
     long_description=longdesc,

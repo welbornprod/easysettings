@@ -5,3 +5,4 @@ __pycache__
 build
 *EasySettings-2.0.0*
 *EasySettings-2.0.2*
+*.egg-info
