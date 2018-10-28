@@ -15,6 +15,12 @@ except ImportError:
     # Python 2..
     from UserDict import UserDict
 
+try:
+    FileNotFoundError
+except NameError:
+    # Python 2..
+    FileNotFoundError = EnvironmentError
+
 __all__ = ['JSONMixin', 'JSONSettings', 'load_json_settings']
 
 
