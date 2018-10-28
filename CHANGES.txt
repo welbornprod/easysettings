@@ -1,3 +1,4 @@
+v2.1.1 10/28/18 -- Added convenience function for loading default JSONSettings.
 v2.1.0 02/26/17 -- bool(EasySettings) now works. Some code was linted.
 v2.0.4 7/18/15 -- Simplization/clean-up, added unit tests for comparison operators.
 v2.0.3 7/14/15 -- Documentation fixes.

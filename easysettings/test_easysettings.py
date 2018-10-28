@@ -13,12 +13,18 @@ import sys
 import tempfile
 import unittest
 
-from . import version, EasySettings, JSONSettings
+from . import (
+    version,
+    EasySettings,
+    JSONSettings,
+    load_json_settings,
+)
 
 print('\n'.join((
     'Testing EasySettings v. {esver}',
     'Using Python {v.major}.{v.minor}.{v.micro}.',
 )).format(esver=version(), v=sys.version_info))
+
 
 class EasySettingsTests(unittest.TestCase):
 
@@ -266,6 +272,42 @@ class JSONSettingsTests(unittest.TestCase):
         self.assertTrue(
             ('option3' in rawdata) and ('value3' in rawdata),
             msg='Could not find new option in saved data!'
+        )
+
+    def test_load_json_settings(self):
+        """ load_json_settings should ignore FileNotFound and handle defaults.
+        """
+        try:
+            settings = load_json_settings('NONEXISTENT_FILE')
+        except FileNotFoundError:
+            self.fail(
+                'load_json_settings should not raise FileNotFoundError.'
+            )
+        # Settings should still load, even when the file doesn't exist.
+        self.assertIsInstance(settings, JSONSettings)
+        # Settings should be an empty JSONSettings.
+        self.assertFalse(bool(settings))
+
+        # Default values should not override existing values.
+        settings = load_json_settings(
+            self.testfile,
+            default={'option1': 'SHOULD_NOT_SET'},
+        )
+        self.assertDictEqual(
+            self.rawdict, settings.data,
+            msg='Failed to load dict settings from file with default key.'
+        )
+        # Default values should be added when not set.
+        settings = load_json_settings(
+            self.testfile,
+            default={'option1': 'SHOULD_NOT_SET', 'option3': 'SHOULD_SET'},
+        )
+
+        d = {k: self.rawdict[k] for k in self.rawdict}
+        d['option3'] = 'SHOULD_SET'
+        self.assertDictEqual(
+            d, settings.data,
+            msg='Failed to add default setting.'
         )
 
 

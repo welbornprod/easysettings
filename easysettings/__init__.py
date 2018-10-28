@@ -21,7 +21,11 @@ from .easy_settings import (
     esSaveError,
     esValueError
 )
-from .json_settings import JSONMixin, JSONSettings
+from .json_settings import (
+    JSONMixin,
+    JSONSettings,
+    load_json_settings,
+)
 
 __all__ = [
     'EasySettings',
@@ -33,5 +37,6 @@ __all__ = [
     'esSaveError',
     'esSetError',
     'esValueError',
+    'load_json_settings',
     'version',
 ]

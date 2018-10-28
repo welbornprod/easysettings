@@ -15,7 +15,34 @@ except ImportError:
     # Python 2..
     from UserDict import UserDict
 
-__all__ = ['JSONMixin', 'JSONSettings']
+__all__ = ['JSONMixin', 'JSONSettings', 'load_json_settings']
+
+
+def load_json_settings(filename, default=None):
+    """ Tries to create a JSONSettings from a filename, but returns a new
+        JSONSettings instance if the file does not exist.
+
+        This is a convenience function for the common try/catch block used
+        when JSONSettings is used for the first time.
+        Instead of:
+            try:
+                config = JSONSettings.from_file(myfile)
+            catch FileNotFoundError:
+                config = JSONSettings()
+                config.filename = myfile
+
+        Just do this:
+            config = load_json_settings(myfile)
+    """
+    try:
+        config = JSONSettings.from_file(filename)
+    except FileNotFoundError:
+        config = JSONSettings()
+        config.filename = filename
+    # Set any defaults passed in, if not already set.
+    for k in (default or {}):
+        config.setdefault(k, default[k])
+    return config
 
 
 class JSONMixin(object):
