@@ -19,7 +19,8 @@ from .easy_settings import (
     esSetError,
     esCompareError,
     esSaveError,
-    esValueError
+    esValueError,
+    __version__,
 )
 from .json_settings import (
     JSONMixin,

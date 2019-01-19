@@ -5,7 +5,7 @@ import sys
 import pickle
 
 # easy settings version
-__version__ = '2.1.2'
+__version__ = '2.1.3'
 
 # Python 3 compatibility flag
 # ...we need this because pickle likes to use bytes in python 3, and strings
@@ -383,13 +383,11 @@ class EasySettings(object):
         """ returns module-level easysettings version string """
         return __version__
 
-    def get(self, soption, default=NoValue):
+    def get(self, soption, default=''):
         """ retrieves a setting from config file
-            Returns default (None) if no setting found.
+            Returns default ('') if no setting found.
             ex: settings.get('mysetting')
         """
-        if default is NoValue:
-            default = ''
         return self.settings.get(soption, default)
 
     def get_bool(self, option, default=False, strict=False):
@@ -439,6 +437,7 @@ class EasySettings(object):
 
             Returns True, False, or possibly None when strict mode is used.
         """
+        # .get() returns an empty str ('') for nonexistent values.
         optval = self.get(option, NoValue)
         if optval is NoValue:
             return default

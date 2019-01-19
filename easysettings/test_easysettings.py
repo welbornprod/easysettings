@@ -220,7 +220,8 @@ class EasySettingsTests(unittest.TestCase):
                 ['a', 'b', 'c'],
                 (1, 2, 3),
                 {'key': 'value'},
-                True
+                True,
+                False,
             ))
         ]
 
@@ -243,6 +244,68 @@ class EasySettingsTests(unittest.TestCase):
             sorted(test_values),
             sorted(settings.list_settings()),
             msg='Settings differed after saving to disk!')
+
+    def test_get_defaults(self):
+        """ get() returns correct default values. """
+        settings = EasySettings()
+        for default in ('', False, True, None, 1, {}, [], 3.14):
+            val = settings.get('nonexistent', default=default)
+            if default in (False, True, None):
+                self.assertIs(
+                    val,
+                    default,
+                    msg='get() failed with default value {}: {}'.format(
+                        default,
+                        val,
+                    )
+                )
+            else:
+                self.assertEqual(
+                    val,
+                    default,
+                    msg='get() failed with default value {}: {}'.format(
+                        default,
+                        val,
+                    ),
+                )
+
+        val = settings.get('nonexistent')
+        self.assertEqual(
+            val,
+            '',
+            msg='get() should return empty str on nonexistent values',
+        )
+
+    def test_get_bool(self):
+        """ get_bool() returns correct values. """
+        vals = {
+            True: ('true', 'yes', 'on', '1'),
+            False: ('false', 'no', 'off', '0'),
+        }
+        for expected, vals in vals.items():
+            for val in vals:
+                settings = EasySettings()
+                settings.set('boolopt', val)
+                setval = settings.get_bool('boolopt')
+                self.assertEqual(
+                    setval,
+                    expected,
+                    msg='get_bool() failed for {} value: '.format(
+                        expected,
+                        setval,
+                    ),
+                )
+
+    def test_get_bool_defaults(self):
+        """ get_bool() should return correct default values. """
+        settings = EasySettings()
+        for default in (True, False):
+            val = settings.get_bool('nonexistent', default=default)
+            self.assertEqual(
+                val,
+                default,
+                msg='get_bool(default={}) failed.'.format(default),
+            )
 
 
 class JSONSettingsTests(unittest.TestCase):
