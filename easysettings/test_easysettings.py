@@ -290,7 +290,7 @@ class EasySettingsTests(unittest.TestCase):
                 self.assertEqual(
                     setval,
                     expected,
-                    msg='get_bool() failed for {} value: '.format(
+                    msg='get_bool() failed for {} value: {}'.format(
                         expected,
                         setval,
                     ),
@@ -309,6 +309,7 @@ class EasySettingsTests(unittest.TestCase):
 
 
 class JSONSettingsTests(unittest.TestCase):
+    """ Tests pertaining to JSONSettings. """
 
     def setUp(self):
         # Setup a test json file to work with.
