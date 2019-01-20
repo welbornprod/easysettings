@@ -20,6 +20,7 @@ from . import (
     load_json_settings,
 )
 
+
 print('\n'.join((
     'Testing EasySettings v. {esver}',
     'Using Python {v.major}.{v.minor}.{v.micro}.',
@@ -37,11 +38,97 @@ class EasySettingsTests(unittest.TestCase):
         os.close(fd)
         self.testfile = fname
         # Known values to test with.
+        # Assumptions about these values are made in some tests.
         self.test_values = [
-            ('option1', 'value1'),
-            ('option2', 'value2'),
-            ('option3', 'value3')
+            ('option{}'.format(i), 'value{}'.format(i))
+            for i in range(1, 4)
         ]
+
+    def test_compare_opts(self):
+        """ compare_settings() should make a good comparison. """
+        es1 = EasySettings()
+        es1.set_list(self.test_values)
+        es2 = EasySettings()
+        es2.set_list(self.test_values)
+        self.assertTrue(
+            es1.compare_opts(es2),
+            msg='compare_opts(es2) failed for equal instances!',
+        )
+        self.assertTrue(
+            es1.compare_opts(es1, es2),
+            msg='compare_opts(es1, es2) failed for equal instances!',
+        )
+        # Change the first value.
+        es2.set('new_option', 'MODIFED')
+        self.assertFalse(
+            es1.compare_opts(es2),
+            msg='compare_opts(es2) failed for non-equal instances!',
+        )
+        self.assertFalse(
+            es1.compare_opts(es1, es2),
+            msg='compare_opts(es1, es2) failed for non-equal instances!',
+        )
+
+    def test_compare_settings(self):
+        """ compare_settings() should make a good comparison. """
+        es1 = EasySettings()
+        es1.set_list(self.test_values)
+        es2 = EasySettings()
+        es2.set_list(self.test_values)
+        self.assertTrue(
+            es1.compare_settings(es2),
+            msg='compare_settings(es2) failed for equal instances!',
+        )
+        self.assertTrue(
+            es1.compare_settings(es1, es2),
+            msg='compare_settings(es1, es2) failed for equal instances!',
+        )
+        # Change the first value.
+        es2.set(es2.list_options()[0], 'MODIFED')
+        self.assertFalse(
+            es1.compare_settings(es2),
+            msg='compare_settings(es2) failed for non-equal instances!',
+        )
+        self.assertFalse(
+            es1.compare_settings(es1, es2),
+            msg='compare_settings(es1, es2) failed for non-equal instances!',
+        )
+
+    def test_compare_vals(self):
+        """ compare_vals() should make a good comparison. """
+        es1 = EasySettings()
+        es1.set_list(self.test_values)
+        es2 = EasySettings()
+        es2.set_list(self.test_values)
+        self.assertTrue(
+            es1.compare_vals(es2),
+            msg='compare_vals(es2) failed for equal instances!',
+        )
+        self.assertTrue(
+            es1.compare_vals(es1, es2),
+            msg='compare_vals(es1, es2) failed for equal instances!',
+        )
+        # Change the first value.
+        firstkey = es2.list_options()[0]
+        es2.set(firstkey, 'MODIFIED')
+        self.assertFalse(
+            es1.compare_vals(es2),
+            msg='compare_vals(es2) failed for non-equal instances!',
+        )
+        self.assertFalse(
+            es1.compare_vals(es1, es2),
+            msg='compare_vals(es1, es2) failed for non-equal instances!',
+        )
+        # Change the first one, to make them equal again.
+        es1.set(firstkey, 'MODIFIED')
+        self.assertTrue(
+            es1.compare_vals(es2),
+            msg='compare_vals(es2) failed for equal instances!',
+        )
+        self.assertTrue(
+            es1.compare_vals(es1, es2),
+            msg='compare_vals(es1, es2) failed for equal instances!',
+        )
 
     def test_comparison_ops(self):
         """ EasySettings comparison operators hold true """
@@ -54,6 +141,7 @@ class EasySettingsTests(unittest.TestCase):
             es2,
             msg='EasySettings with the same options/values are not equal!'
         )
+
         # Change the first value.
         es2.set(es2.list_options()[0], 'MODIFED')
         self.assertNotEqual(

@@ -11,7 +11,7 @@ Created on Jan 16, 2013
 @author: Christopher Welborn
 '''
 
-from .easy_settings import (
+from .easy_settings import (  # noqa
     EasySettings,
     version,
     esError,

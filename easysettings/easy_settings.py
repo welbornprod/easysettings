@@ -5,7 +5,7 @@ import sys
 import pickle
 
 # easy settings version
-__version__ = '2.1.3'
+__version__ = '2.1.4'
 
 # Python 3 compatibility flag
 # ...we need this because pickle likes to use bytes in python 3, and strings
@@ -139,6 +139,26 @@ class EasySettings(object):
         """ An EasySettings is truthy if it's settings are truthy. """
         return bool(self.settings)
 
+    def _as_comparable(self, other=NoValue):
+        """ Return self.settings if `other` is not given.
+            If `other` is given, return other.settings or dict(other).
+        """
+        if other is NoValue:
+            return self.settings
+
+        if isinstance(other, EasySettings):
+            return other.settings
+        elif isinstance(other, dict):
+            return other
+
+        clsname = type(self).__name__
+        raise TypeError(
+            'Expecting {clsname} or {clsname}.settings, got: {typ}'.format(
+                clsname=clsname,
+                typ=type(other).__name__,
+            )
+        )
+
     def _build_header(self):
         """ Build the first line for the config file, a comment line
             that describes what the config file is for.
@@ -151,6 +171,18 @@ class EasySettings(object):
             if self.version:
                 lines.append('v. {}'.format(self.version))
         return ' '.join(lines)
+
+    def _get_compare_args(self, other, other2=NoValue):
+        """ Determines which two instances are being compared by args.
+            Returns either:
+                self, other
+            or:
+                other, other2
+            ...as comparable dicts.
+        """
+        if other2 is NoValue:
+            return self._as_comparable(), self._as_comparable(other)
+        return self._as_comparable(other), self._as_comparable(other2)
 
     def _parse_header(self):
         """ Parses self.header and converts it to comment lines.
@@ -198,47 +230,16 @@ class EasySettings(object):
 
         return True
 
-    def compare_opts(self, settings1, settings2=None):  # noqa
+    def compare_opts(self, settings1, settings2=NoValue):  # noqa
         """ compare the options/keys of two easysettings instances,
             or dicts (easysettings.settings)..
             returns False if values don't match.
         """
-        try:
-            b_esinstance = isinstance(settings1, EasySettings)
-        except Exception:
-            b_esinstance = False
+        adict, bdict = self._get_compare_args(settings1, settings2)
 
-        if b_esinstance:
-            set1 = settings1.settings
-        elif isinstance(settings1, dict):
-            set1 = settings1
-        else:
-            raise esCompareError(
-                'Expecting EasySettings, or EasySettings.settings.'
-            )
-            return False
-        # compare to self
-        if settings2 is None:
-            settings2 = self.settings
+        return set(adict) == set(bdict)
 
-        try:
-            b_esinstance = isinstance(settings2, EasySettings)
-        except:
-            b_esinstance = False
-
-        if b_esinstance:
-            set2 = settings2.settings
-        elif isinstance(settings2, dict):
-            set2 = settings2
-        else:
-            raise esCompareError(
-                'Expecting EasySettings, or EasySettings.settings.'
-            )
-            return False
-        # do the compare
-        return set(set1) == set(set2)
-
-    def compare_settings(self, settings1, settings2=None):
+    def compare_settings(self, settings1, settings2=NoValue):
         """ compare two EasySettings() instances,
             or dicts (easysettings.settings)
             ex:
@@ -262,56 +263,28 @@ class EasySettings(object):
             # ...this returns True because set1 and set3's 'user' is the same
 
         """
-        # compare to self
-        if settings2 is None:
-            settings2 = self.settings
-        return all([self.compare_opts(settings1, settings2),
-                    self.compare_vals(settings1, settings2)])
+        adict, bdict = self._get_compare_args(settings1, settings2)
+        if len(adict) != len(bdict):
+            return False
+        return (
+            self.compare_opts(settings1, settings2) and
+            self.compare_vals(settings1, settings2)
+        )
 
-    def compare_vals(self, settings1, settings2=None):  # noqa
+
+    def compare_vals(self, settings1, settings2=NoValue):  # noqa
         """ compare the values of two easysettings instances,
             or dicts (easysettings.settings)..
             returns False if values don't match.
         """
-
-        try:
-            b_esinstance = isinstance(settings1, EasySettings)
-        except:
-            b_esinstance = False
-
-        if b_esinstance:
-            set1 = settings1.settings
-        elif isinstance(settings1, dict):
-            set1 = settings1
-        else:
-            raise esCompareError(
-                "only easysetting instances or easysettings.settings"
-                " are allowed!")
+        adict, bdict = self._get_compare_args(settings1, settings2)
+        if set(adict.values()) != set(bdict.values()):
             return False
-        # compare to self
-        if settings2 is None:
-            settings2 = self.settings
-
-        try:
-            b_esinstance = isinstance(settings2, EasySettings)
-        except:
-            b_esinstance = False
-
-        if b_esinstance:
-            set2 = settings2.settings
-        elif isinstance(settings2, dict):
-            set2 = settings2
-        else:
-            raise esCompareError(
-                "only easysettings instances or easysettings.settings"
-                " are allowed")
-            return False
-        # do the compare
-        for itm in list(set1.values()):
-            if itm not in list(set2.values()):
+        for key, aval in adict.items():
+            bval = bdict.get(key, NoValue)
+            if bval is None:
                 return False
-        for itm2 in list(set2.values()):
-            if itm2 not in list(set1.values()):
+            elif aval != bval:
                 return False
         return True
 
