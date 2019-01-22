@@ -5,7 +5,7 @@ import sys
 import pickle
 
 # easy settings version
-__version__ = '2.1.4'
+__version__ = '2.1.5'
 
 # Python 3 compatibility flag
 # ...we need this because pickle likes to use bytes in python 3, and strings
@@ -282,7 +282,7 @@ class EasySettings(object):
             return False
         for key, aval in adict.items():
             bval = bdict.get(key, NoValue)
-            if bval is None:
+            if bval is NoValue:
                 return False
             elif aval != bval:
                 return False

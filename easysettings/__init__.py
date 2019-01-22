@@ -13,6 +13,7 @@ Created on Jan 16, 2013
 
 from .easy_settings import (  # noqa
     EasySettings,
+    __version__,
     version,
     esError,
     esGetError,
@@ -20,7 +21,6 @@ from .easy_settings import (  # noqa
     esCompareError,
     esSaveError,
     esValueError,
-    __version__,
 )
 from .json_settings import (
     JSONMixin,

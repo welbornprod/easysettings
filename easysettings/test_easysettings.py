@@ -129,6 +129,19 @@ class EasySettingsTests(unittest.TestCase):
             es1.compare_vals(es1, es2),
             msg='compare_vals(es1, es2) failed for equal instances!',
         )
+        # Remove an option from #2
+        es2.remove('option3')
+        self.assertFalse(
+            es1.compare_vals(es2),
+            msg='compare_vals(es2) failed for missing option!',
+        )
+        # Reset, except with None value (bug #4)
+        es1.set('option3', None)
+        es2.set('option3', None)
+        self.assertTrue(
+            es1.compare_vals(es2),
+            msg='compare_vals(es2) failed for None values!',
+        )
 
     def test_comparison_ops(self):
         """ EasySettings comparison operators hold true """
@@ -136,6 +149,9 @@ class EasySettingsTests(unittest.TestCase):
         es1.set_list(self.test_values)
         es2 = EasySettings()
         es2.set_list(self.test_values)
+        # Extra values for bug #4.
+        es1.set('option4', None)
+        es2.set('option4', None)
         self.assertEqual(
             es1,
             es2,
