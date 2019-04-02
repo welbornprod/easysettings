@@ -13,12 +13,19 @@ import sys
 import tempfile
 import unittest
 
-from . import version, EasySettings, JSONSettings
+from . import (
+    version,
+    EasySettings,
+    JSONSettings,
+    load_json_settings,
+)
+
 
 print('\n'.join((
     'Testing EasySettings v. {esver}',
     'Using Python {v.major}.{v.minor}.{v.micro}.',
 )).format(esver=version(), v=sys.version_info))
+
 
 class EasySettingsTests(unittest.TestCase):
 
@@ -31,11 +38,110 @@ class EasySettingsTests(unittest.TestCase):
         os.close(fd)
         self.testfile = fname
         # Known values to test with.
+        # Assumptions about these values are made in some tests.
         self.test_values = [
-            ('option1', 'value1'),
-            ('option2', 'value2'),
-            ('option3', 'value3')
+            ('option{}'.format(i), 'value{}'.format(i))
+            for i in range(1, 4)
         ]
+
+    def test_compare_opts(self):
+        """ compare_settings() should make a good comparison. """
+        es1 = EasySettings()
+        es1.set_list(self.test_values)
+        es2 = EasySettings()
+        es2.set_list(self.test_values)
+        self.assertTrue(
+            es1.compare_opts(es2),
+            msg='compare_opts(es2) failed for equal instances!',
+        )
+        self.assertTrue(
+            es1.compare_opts(es1, es2),
+            msg='compare_opts(es1, es2) failed for equal instances!',
+        )
+        # Change the first value.
+        es2.set('new_option', 'MODIFED')
+        self.assertFalse(
+            es1.compare_opts(es2),
+            msg='compare_opts(es2) failed for non-equal instances!',
+        )
+        self.assertFalse(
+            es1.compare_opts(es1, es2),
+            msg='compare_opts(es1, es2) failed for non-equal instances!',
+        )
+
+    def test_compare_settings(self):
+        """ compare_settings() should make a good comparison. """
+        es1 = EasySettings()
+        es1.set_list(self.test_values)
+        es2 = EasySettings()
+        es2.set_list(self.test_values)
+        self.assertTrue(
+            es1.compare_settings(es2),
+            msg='compare_settings(es2) failed for equal instances!',
+        )
+        self.assertTrue(
+            es1.compare_settings(es1, es2),
+            msg='compare_settings(es1, es2) failed for equal instances!',
+        )
+        # Change the first value.
+        es2.set(es2.list_options()[0], 'MODIFED')
+        self.assertFalse(
+            es1.compare_settings(es2),
+            msg='compare_settings(es2) failed for non-equal instances!',
+        )
+        self.assertFalse(
+            es1.compare_settings(es1, es2),
+            msg='compare_settings(es1, es2) failed for non-equal instances!',
+        )
+
+    def test_compare_vals(self):
+        """ compare_vals() should make a good comparison. """
+        es1 = EasySettings()
+        es1.set_list(self.test_values)
+        es2 = EasySettings()
+        es2.set_list(self.test_values)
+        self.assertTrue(
+            es1.compare_vals(es2),
+            msg='compare_vals(es2) failed for equal instances!',
+        )
+        self.assertTrue(
+            es1.compare_vals(es1, es2),
+            msg='compare_vals(es1, es2) failed for equal instances!',
+        )
+        # Change the first value.
+        firstkey = es2.list_options()[0]
+        es2.set(firstkey, 'MODIFIED')
+        self.assertFalse(
+            es1.compare_vals(es2),
+            msg='compare_vals(es2) failed for non-equal instances!',
+        )
+        self.assertFalse(
+            es1.compare_vals(es1, es2),
+            msg='compare_vals(es1, es2) failed for non-equal instances!',
+        )
+        # Change the first one, to make them equal again.
+        es1.set(firstkey, 'MODIFIED')
+        self.assertTrue(
+            es1.compare_vals(es2),
+            msg='compare_vals(es2) failed for equal instances!',
+        )
+        self.assertTrue(
+            es1.compare_vals(es1, es2),
+            msg='compare_vals(es1, es2) failed for equal instances!',
+        )
+        # Remove an option from #2
+        es2.remove('option3')
+        self.assertFalse(
+            es1.compare_vals(es2),
+            msg='compare_vals(es2) failed for missing option!',
+        )
+        # Reset, except with None value (bug #4)
+        es1.set('option3', None)
+        es2.set('option3', None)
+        self.assertTrue(
+            es1.compare_vals(es2),
+            msg='compare_vals(es2) failed for None values!',
+        )
 
     def test_comparison_ops(self):
         """ EasySettings comparison operators hold true """
@@ -43,11 +149,15 @@ class EasySettingsTests(unittest.TestCase):
         es1.set_list(self.test_values)
         es2 = EasySettings()
         es2.set_list(self.test_values)
+        # Extra values for bug #4.
+        es1.set('option4', None)
+        es2.set('option4', None)
         self.assertEqual(
             es1,
             es2,
             msg='EasySettings with the same options/values are not equal!'
         )
+
         # Change the first value.
         es2.set(es2.list_options()[0], 'MODIFED')
         self.assertNotEqual(
@@ -214,7 +324,8 @@ class EasySettingsTests(unittest.TestCase):
                 ['a', 'b', 'c'],
                 (1, 2, 3),
                 {'key': 'value'},
-                True
+                True,
+                False,
             ))
         ]
 
@@ -238,8 +349,71 @@ class EasySettingsTests(unittest.TestCase):
             sorted(settings.list_settings()),
             msg='Settings differed after saving to disk!')
 
+    def test_get_defaults(self):
+        """ get() returns correct default values. """
+        settings = EasySettings()
+        for default in ('', False, True, None, 1, {}, [], 3.14):
+            val = settings.get('nonexistent', default=default)
+            if default in (False, True, None):
+                self.assertIs(
+                    val,
+                    default,
+                    msg='get() failed with default value {}: {}'.format(
+                        default,
+                        val,
+                    )
+                )
+            else:
+                self.assertEqual(
+                    val,
+                    default,
+                    msg='get() failed with default value {}: {}'.format(
+                        default,
+                        val,
+                    ),
+                )
+
+        val = settings.get('nonexistent')
+        self.assertEqual(
+            val,
+            '',
+            msg='get() should return empty str on nonexistent values',
+        )
+
+    def test_get_bool(self):
+        """ get_bool() returns correct values. """
+        vals = {
+            True: ('true', 'yes', 'on', '1'),
+            False: ('false', 'no', 'off', '0'),
+        }
+        for expected, vals in vals.items():
+            for val in vals:
+                settings = EasySettings()
+                settings.set('boolopt', val)
+                setval = settings.get_bool('boolopt')
+                self.assertEqual(
+                    setval,
+                    expected,
+                    msg='get_bool() failed for {} value: {}'.format(
+                        expected,
+                        setval,
+                    ),
+                )
+
+    def test_get_bool_defaults(self):
+        """ get_bool() should return correct default values. """
+        settings = EasySettings()
+        for default in (True, False):
+            val = settings.get_bool('nonexistent', default=default)
+            self.assertEqual(
+                val,
+                default,
+                msg='get_bool(default={}) failed.'.format(default),
+            )
+
 
 class JSONSettingsTests(unittest.TestCase):
+    """ Tests pertaining to JSONSettings. """
 
     def setUp(self):
         # Setup a test json file to work with.
@@ -266,6 +440,42 @@ class JSONSettingsTests(unittest.TestCase):
         self.assertTrue(
             ('option3' in rawdata) and ('value3' in rawdata),
             msg='Could not find new option in saved data!'
+        )
+
+    def test_load_json_settings(self):
+        """ load_json_settings should ignore FileNotFound and handle defaults.
+        """
+        try:
+            settings = load_json_settings('NONEXISTENT_FILE')
+        except FileNotFoundError:
+            self.fail(
+                'load_json_settings should not raise FileNotFoundError.'
+            )
+        # Settings should still load, even when the file doesn't exist.
+        self.assertIsInstance(settings, JSONSettings)
+        # Settings should be an empty JSONSettings.
+        self.assertFalse(bool(settings))
+
+        # Default values should not override existing values.
+        settings = load_json_settings(
+            self.testfile,
+            default={'option1': 'SHOULD_NOT_SET'},
+        )
+        self.assertDictEqual(
+            self.rawdict, settings.data,
+            msg='Failed to load dict settings from file with default key.'
+        )
+        # Default values should be added when not set.
+        settings = load_json_settings(
+            self.testfile,
+            default={'option1': 'SHOULD_NOT_SET', 'option3': 'SHOULD_SET'},
+        )
+
+        d = {k: self.rawdict[k] for k in self.rawdict}
+        d['option3'] = 'SHOULD_SET'
+        self.assertDictEqual(
+            d, settings.data,
+            msg='Failed to add default setting.'
         )
 
 

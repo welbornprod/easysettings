@@ -1,3 +1,8 @@
+v2.1.5 01/21/19 -- Bug-fix release, fix #4.
+v2.1.4 01/20/19 -- Test-related changes were made.
+v2.1.3 01/19/19 -- get()/get_bool() should honor default values. Fixes issue #3.
+v2.1.2 10/28/18 -- Fixed python 2 compatibility in json_settings.
+v2.1.1 10/28/18 -- Added convenience function for loading default JSONSettings.
 v2.1.0 02/26/17 -- bool(EasySettings) now works. Some code was linted.
 v2.0.4 7/18/15 -- Simplization/clean-up, added unit tests for comparison operators.
 v2.0.3 7/14/15 -- Documentation fixes.

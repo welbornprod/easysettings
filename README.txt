@@ -12,6 +12,13 @@ settings in JSON format.
 Bug Fixes
 ---------
 
+-  Version 2.1.4:
+
+   ``get()`` and ``get_bool()`` will honor default values when the key
+   doesn't exist. Fixes Issue #3.
+
+   Python 2 compatibility bug fixed.
+
 -  Version 2.1.0:
 
 Added ``bool(EasySettings())``. It's the same as
