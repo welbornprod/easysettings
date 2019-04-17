@@ -1,3 +1,4 @@
+v2.2.0 04/16/19 -- Raise KeyError on missing options in JSONSettings.get().
 v2.1.5 01/21/19 -- Bug-fix release, fix #4.
 v2.1.4 01/20/19 -- Test-related changes were made.
 v2.1.3 01/19/19 -- get()/get_bool() should honor default values. Fixes issue #3.
