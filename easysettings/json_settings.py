@@ -51,6 +51,19 @@ def load_json_settings(filename, default=None):
     return config
 
 
+class _NotSet(object):
+    """ A value other than None to mean 'not set' or 'nothing'. """
+    def __bool__(self):
+        return False
+
+    def __str__(self):
+        return '<NotSet>'
+
+
+# Singleton instance for identity comparison.
+NotSet = _NotSet()
+
+
 class JSONMixin(object):
 
     """ This mixin provides two methods that both operate on `self.data`.
@@ -120,6 +133,17 @@ class JSONSettings(UserDict, JSONMixin):
         settings = cls()
         settings.load(filename)
         return settings
+
+    def get(self, option, default=NotSet):
+        """ Like `dict.get`. Raises `KeyError` for missing keys if no
+            default value is given.
+        """
+        val = self.data.get(option, NotSet)
+        if val is NotSet:
+            if default is NotSet:
+                raise KeyError('Key does not exist: {}'.format(option))
+            return default
+        return val
 
     def set(self, option, value):
         """ Convenience function to match EasySettings behaviour.
