@@ -21,6 +21,9 @@ from . import (
 )
 
 
+if sys.version_info.major < 3:
+    FileNotFoundError = EnvironmentError
+
 print('\n'.join((
     'Testing EasySettings v. {esver}',
     'Using Python {v.major}.{v.minor}.{v.micro}.',
@@ -418,10 +421,43 @@ class JSONSettingsTests(unittest.TestCase):
     def setUp(self):
         # Setup a test json file to work with.
         self.rawdict = {'option1': 'value1', 'option2': 'value2'}
-        fd, fname = tempfile.mkstemp(suffix='.json', prefix='easysettings.')
+        fd, fname = self.make_tempfile()
         os.write(fd, json.dumps(self.rawdict, indent=4).encode())
         os.close(fd)
         self.testfile = fname
+
+    def make_tempfile(self):
+        return tempfile.mkstemp(suffix='.json', prefix='easysettings.')
+
+    def test_encoder_decoder(self):
+        """ JSONSettings should support custom JSONEncoders/Decoders. """
+        fd, fname = self.make_tempfile()
+        os.close(fd)
+        settings = JSONSettings(
+            self.rawdict,
+            decoder=CustomDecoder,
+            encoder=CustomEncoder,
+        )
+        test_val = CustomString('{a}, {b}, {c}')
+        settings['my_str_list'] = test_val
+        settings.save(filename=fname)
+
+        notencoded = JSONSettings.from_file(fname)
+        self.assertListEqual(
+            notencoded['my_str_list'],
+            ['a', 'b', 'c'],
+            msg='Custom encoder failed.'
+        )
+
+        decoded = JSONSettings.from_file(fname, decoder=CustomDecoder)
+        self.assertEqual(
+            decoded['my_str_list'],
+            test_val,
+            msg='Custom decoder failed:\n{dec!r} != {enc!r}'.format(
+                dec=decoded['my_str_list'].data,
+                enc=test_val.data,
+            )
+        )
 
     def test_get(self):
         """ JSONSettings.get should raise on missing keys. """
@@ -442,6 +478,34 @@ class JSONSettingsTests(unittest.TestCase):
             val,
             'test',
             msg='.get() failed to return default value!'
+        )
+
+    def test_hooks(self):
+        """ JSONSettings load/save hooks should work. """
+        fd, fname = self.make_tempfile()
+        os.close(fd)
+        teststr = 'testing'
+        settings = JSONSettings_Hooks(
+            {'hook_test_1': teststr},
+        )
+        settings.save(filename=fname)
+
+        nothooked = JSONSettings.from_file(fname)
+        self.assertEqual(
+            nothooked['hook_test_1'],
+            '!{}'.format(teststr),
+            msg='Failed to hook item on save: {!r}'.format(
+                nothooked['hook_test_1'],
+            )
+        )
+
+        hooked = JSONSettings_Hooks.from_file(fname)
+        self.assertEqual(
+            hooked['hook_test_1'],
+            teststr,
+            msg='Failed to hook item on load: {!r}'.format(
+                nothooked['hook_test_1'],
+            )
         )
 
     def test_json_load_save(self):
@@ -498,6 +562,49 @@ class JSONSettingsTests(unittest.TestCase):
             d, settings.data,
             msg='Failed to add default setting.'
         )
+
+
+class CustomDecoder(json.JSONDecoder):
+    def __init__(self, **kwargs):
+        kwargs['object_hook'] = self.object_hooker
+        super(CustomDecoder, self).__init__(**kwargs)
+
+    def object_hooker(self, o):
+        modified = {}
+        for k, v in o.items():
+            if isinstance(v, list):
+                modified[k] = CustomString(
+                    ', '.join('{{{}}}'.format(s) for s in v)
+                )
+            else:
+                modified[k] = v
+        return modified
+
+
+class CustomEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, CustomString):
+            items = [x.strip()[1:-1] for x in o.data.split(',')]
+            return items
+        return super(CustomEncoder, self).default(o)
+
+
+class CustomString(object):
+    def __init__(self, data):
+        self.data = str(data)
+
+    def __eq__(self, other):
+        return isinstance(other, CustomString) and (self.data == other.data)
+
+
+class JSONSettings_Hooks(JSONSettings):
+    def load_item_hook(self, key, value):
+        if key.startswith('hook_test'):
+            return key, value[1:]
+
+    def save_item_hook(self, key, value):
+        if key.startswith('hook_test'):
+            return key, '!{}'.format(value)
 
 
 if __name__ == '__main__':

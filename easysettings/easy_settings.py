@@ -5,7 +5,7 @@ import sys
 import pickle
 
 # easy settings version
-__version__ = '2.2.0'
+__version__ = '3.0.0'
 
 # Python 3 compatibility flag
 # ...we need this because pickle likes to use bytes in python 3, and strings

@@ -23,14 +23,12 @@ from .easy_settings import (  # noqa
     esValueError,
 )
 from .json_settings import (
-    JSONMixin,
     JSONSettings,
     load_json_settings,
 )
 
 __all__ = [
     'EasySettings',
-    'JSONMixin',
     'JSONSettings',
     'esCompareError',
     'esError',
