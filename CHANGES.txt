@@ -1,3 +1,4 @@
+v3.0.0 05/05/19 -- Custom JSONEncoder/Decoders, and hooking items before saving or after loading.
 v2.2.0 04/16/19 -- Raise KeyError on missing options in JSONSettings.get().
 v2.1.5 01/21/19 -- Bug-fix release, fix #4.
 v2.1.4 01/20/19 -- Test-related changes were made.

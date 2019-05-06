@@ -28,7 +28,7 @@ else:
 
 setup(
     name='EasySettings',
-    version='2.2.0',
+    version='3.0.0',
     author='Christopher Welborn',
     author_email='cj@welbornprod.com',
     packages=['easysettings'],

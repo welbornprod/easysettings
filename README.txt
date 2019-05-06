@@ -12,144 +12,14 @@ settings in JSON format.
 Bug Fixes
 ---------
 
--  Version 2.1.4:
+-  Version 3.0.0:
 
-   ``get()`` and ``get_bool()`` will honor default values when the key
-   doesn't exist. Fixes Issue #3.
+Custom ``JSONEncoder``/``JSONDecoder`` classes can be used in
+``JSONSettings``, and settings/items can be hooked after
+decoding/loading or before encoding/saving.
 
-   Python 2 compatibility bug fixed.
-
--  Version 2.1.0:
-
-Added ``bool(EasySettings())``. It's the same as
-``bool(EasySettings().settings)``. Some other code was linted.
-
--  Version 2.0.4:
-
-Simplization/clean-up, added unit tests for comparison operators.
-
--  Version 2.0.2:
-
-The ``repr()``\ for EasySettings was modified slightly to better
-represent python syntax.
-
--  Version 2.0.1:
-
-Added unit tests and ``JSONSettings``/``JSONMixin``.
-
-``JSONSettings`` is a ``UserDict`` with a few extra methods for saving
-settings as JSON. It uses ``JSONMixin`` to achieve this.
-
-You can ``load()``, ``save()``, and ``setsave()`` settings to/from a
-JSON file as a dict. There is also a class method,
-``JSONSettings.from_file()`` for loading existing settings.
-
-The ``get()`` function is just the native ``dict.get()``, though a
-``set()`` function was added to make this more compatible with
-``EasySettings``. The ``__setitem__()`` method is preferred
-(``mysettings[option] = value``) over ``set()``.
-
--  Version 1.9.3-5:
-
-Added get\_bool(option). Parses string values as booleans in a human
-friendly way. Solves the ``bool('false') != False`` problem. This is not
-required because EasySettings already saves boolean values.
-``settings.set('opt', False)`` will already do
-``settings.get('opt') == False``. This is for when you want to parse the
-values ``true/false``, ``yes/no``, ``on/off``, ``1/0`` as a boolean and
-get the correct result. The strings are not case-sensitive.
-
-By default, any value that is not a known ``False`` value is returned
-``True``, though there is a ``strict`` option that will return
-``default`` for unknown values.
-
-When used on non-string values ``bool(value)`` is returned.
-
--  Version 1.9.3-2:
-
-Changed default returns in EasySettings.get(). None is a valid default
-return now. Empty string will be returned if no default is set, but any
-other default setting will be honored.
-
--  Version 1.9.3:
-
-Added ``EasySettings.header`` and initialization arguments.
-
-Usage:
-
-.. code:: python
-
-    appdesc = 'My beautiful application.\nUse wisely.'
-    settings = EasySettings('myfile.conf', name='MyApp', version='1.0.0', header=appdesc)
-    # or for an existing EasySettings() instance:
-    # settings.header = appdesc
-    settings.setsave('option', 'value')
-
-Now when ``save()`` is called the configuration file will look like
-this:
-
-::
-
-    # Configuration for MyApp v1.0.0
-    # My beautiful application.
-    # Use wisely.
-    option=value
-
--  Version 1.9.2:
-
-Package changes. Switched README to automatically convert markdown to
-rst using pypandoc.
-
--  Version 1.8.8:
-
-Small changes were made to help compatibility issues between the old and
-new package layouts. You can still do:
-``from easysettings import easysettings`` and then
-``easysettings.easysettings`` if you have to. The new method is much
-better though.
-
--  Version 1.8.7:
-
-Changed package layout. Instead of
-``from easysettings.easysettings import easysettings``, the simple form
-of \`from easysettings import EasySettings' can be used. The main class
-has been given a proper class name.
-
--  Version 1.8.6:
-
-Fixed small bug in ``setsave()`` where ``setsave('opt', False)`` caused
-errors.
-
--  Version 1.8.3:
-
-Non-string types were not being loaded or saved properly. All issues are
-resolved. The method has been enhanced so debug printing will be
-'prettier'. Example of 'debug printing' settings:
-
-.. code:: python
-
-    from easysettings import easysettings
-    settings = EasySettings('myconfigfile.conf')
-    settings.set('option', True)
-    settings.set('option2', ['cjw', 'amy', 'joseph'])
-    print settings
-    # this will now print as:
-    #     {'option': True, 'option2', ['cjw', 'amy', 'joseph']}
-    # instead of pickle's messed up looking strings like:
-    #    {'option': I01\n.  (for a True boolean value), ... }
-
-This fix also allows you to save values with the newline character in
-them. So code like this will work:
-
-.. code:: python
-
-    settings.set('mytext', 'this\nstring\n\has\nnewlines.')
-    print settings.get('mytext')
-    # this will result in:
-    #     this
-    #    string
-    #    has
-    #    newlines.
+This allows you to modify the values in any way you see fit by
+subclassing.
 
 Examples
 --------
@@ -272,7 +142,7 @@ same type that was set:
 
 .. code:: python
 
-    es = EasySettings('myconfigfile.conf)
+    es = EasySettings('myconfigfile.conf')
 
     # Boolean
     es.set("newuser", True)
@@ -375,19 +245,21 @@ JSONSettings Example:
     from easysettings import JSONSettings
 
     # Starting from scratch:
-    js = JSONSettings()
+    js = JSONSettings(filename='myfile.json')
     js['option'] = 'value'
-    js.save(filename='myfile.json')
+    js.save()
 
-    # Loading existing settings:
-    js = JSONSettings()
-    js.load('myfile.json')
+.. code:: python
+
+    from easysettings import JSONSettings, load_json_settings
+    # Loading settings that may not exist yet:
+    js = load_json_settings('myfile.json', default={'option': 'mydefault'})
     print(js['option'])
 
     # Set an item and save the settings.
     js.setsave('option2', 'value2', sort_keys=True)
 
-    # Alternate load method:
+    # Alternate load method, may raise FileNotFoundError.
     js = JSONSettings.from_file('myjsonfile.json')
 
 PyPi Package
