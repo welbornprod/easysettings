@@ -423,6 +423,27 @@ class JSONSettingsTests(unittest.TestCase):
         os.close(fd)
         self.testfile = fname
 
+    def test_get(self):
+        """ JSONSettings.get should raise on missing keys. """
+        settings = JSONSettings(self.rawdict)
+        # Non-existing key should raise.
+        with self.assertRaises(KeyError, msg='.get() failed to raise!'):
+            settings.get('NOT_AN_OPTION')
+        # Existing key.
+        val = settings.get('option1', None)
+        self.assertEqual(
+            val,
+            'value1',
+            msg='.get() failed to return an existing value!'
+        )
+        # Default should be honored.
+        val = settings.get('NOT_AN_OPTION', default='test')
+        self.assertEqual(
+            val,
+            'test',
+            msg='.get() failed to return default value!'
+        )
+
     def test_json_load_save(self):
         """ JSONSettings loads and saves JSON files """
         settings = JSONSettings.from_file(self.testfile)
