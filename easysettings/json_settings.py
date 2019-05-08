@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 """ json_settings.py
-    version: 0.2.0
 
     ...Simple JSON settings class that uses a JSON mixin.
     Christopher Welborn 01-16-2015
@@ -10,17 +9,14 @@
 
 import json
 
+from .common_base import (
+    SettingsBase,
+)
 try:
-    from collections import UserDict
+    from .common_base import FileNotFoundError
 except ImportError:
-    # Python 2..
-    from UserDict import UserDict
-
-try:
-    FileNotFoundError
-except NameError:
-    # Python 2..
-    FileNotFoundError = EnvironmentError
+    # Python 3, don't need to import this name.
+    pass
 
 __all__ = ['JSONSettings', 'load_json_settings']
 
@@ -60,20 +56,7 @@ def load_json_settings(
     return config
 
 
-class _NotSet(object):
-    """ A value other than None to mean 'not set' or 'nothing'. """
-    def __bool__(self):
-        return False
-
-    def __str__(self):
-        return '<NotSet>'
-
-
-# Singleton instance for identity comparison.
-NotSet = _NotSet()
-
-
-class JSONSettings(UserDict):
+class JSONSettings(SettingsBase):
     """ This is a UserDict with methods to load/save in JSON format.
         The JSON data must be a dict, and all dict keys and values must be
         compatible with JSON serialization.
@@ -85,15 +68,9 @@ class JSONSettings(UserDict):
             `encoder` and `decoder` arguments for
             JSONEncoder/JSONDecoder instances.
         """
-        if iterable:
-            self.data = dict(iterable)
-        elif kwargs:
-            self.data = {k: v for k, v in kwargs.items()}
-        else:
-            self.data = {}
-        self.filename = filename or None
         self.encoder = encoder
         self.decoder = decoder
+        super(JSONSettings, self).__init__(iterable=iterable, filename=filename, **kwargs)
 
     @classmethod
     def from_file(cls, filename, encoder=None, decoder=None):
@@ -103,108 +80,31 @@ class JSONSettings(UserDict):
 
             All open() and json.load() exceptions are propagated.
         """
-        settings = cls(encoder=encoder, decoder=decoder)
-        settings.load(filename=filename)
+        settings = cls(filename=filename, encoder=encoder, decoder=decoder)
+        settings.load()
         return settings
-
-    def get(self, option, default=NotSet):
-        """ Like `dict.get`. Raises `KeyError` for missing keys if no
-            default value is given.
-        """
-        val = self.data.get(option, NotSet)
-        if val is NotSet:
-            if default is NotSet:
-                raise KeyError('Key does not exist: {}'.format(option))
-            return default
-        return val
 
     def load(self, filename=None):
         """ Load this dict from a JSON file.
             Raises the same errors as open() and json.load().
         """
-        if filename or (not getattr(self, 'filename', None)):
-            self.filename = filename
-
-        if not self.filename:
-            raise ValueError('`filename` must be set.')
-
-        with open(self.filename, 'r') as f:
-            data = json.load(f, cls=self.decoder)
-
-        if data is None:
-            # JSON null.
-            data = {}
-
-        if not isinstance(data, dict):
-            raise TypeError(
-                'Data was replace with non dict type, got: {}'.format(
-                    type(data)))
-        self.data = self.load_hook(data)
-
-    def load_hook(self, data):
-        """ Called on self.data after JSON decoding, before setting
-            self.data.
-            Can be overridden to modify self.data after decoding, before
-            before setting self.data.
-        """
-        modified = {}
-        for k, v in data.items():
-            newk, newv = self.load_item_hook(k, v)
-            modified[newk] = newv
-        return modified
-
-    def load_item_hook(self, key, value):
-        """ Called on all keys/values after JSON decoding, before setting
-            self.data[key] = value.
-            Can be overridden to modify values after encoding.
-        """
-        return key, value
+        super(JSONSettings, self).load(json, cls=self.decoder)
 
     def save(self, filename=None, sort_keys=False):
         """ Save this dict to a JSON file.
             Raises the same errors as open() and json.dump().
         """
-        filename = filename or getattr(self, 'filename', None)
-        self.filename = filename
-
-        if not self.filename:
-            raise ValueError('`filename` must be set.')
-
-        with open(self.filename, 'w') as f:
-            json.dump(
-                self.save_hook(self.data),
-                f,
-                indent=4,
-                sort_keys=sort_keys,
-                cls=self.encoder,
-            )
-
-    def save_hook(self, data):
-        """ Called on self.data before JSON encoding, before saving.
-            Can be overridden to modify self.data before encoding/saving.
-        """
-        modified = {}
-        for k, v in data.items():
-            newk, newv = self.save_item_hook(k, v)
-            modified[newk] = newv
-        return modified
-
-    def save_item_hook(self, key, value):
-        """ Called on all keys/values before JSON encoding and saving.
-            Can be overridden to modify values before encoding.
-        """
-        return key, value
-
-    def set(self, option, value):
-        """ Convenience function to match EasySettings behaviour.
-            Though the __setitem__() (settings[option] = value) form is better.
-            Arguments:
-                option  : Option/key to set.
-                value   : Value to set for the option/key.
-        """
-        self.data[option] = value
+        super(JSONSettings, self).save(
+            json,
+            filename=filename,
+            indent=4,
+            sort_keys=sort_keys,
+            cls=self.encoder,
+        )
 
     def setsave(self, option, value, filename=None, sort_keys=False):
         """ The same as calling .set() and then .save(). """
-        self.set(option, value)
-        self.save(filename=filename, sort_keys=sort_keys)
+        super(JSONSettings, self).setsave(
+            filename=filename,
+            sort_keys=sort_keys,
+        )

@@ -581,7 +581,7 @@ class EasySettings(object):
                 self.settings = es.settings
 
                 return es
-        except:
+        except Exception:
             return None
 
     def read_file_noset(self, sfile=None):
@@ -692,7 +692,7 @@ class EasySettings(object):
                 pickle.dump(self, fpickle_write)
                 return True
             return False
-        except:
+        except Exception:
             return False
 
     def set(self, soption, value=None):
@@ -832,7 +832,7 @@ class EasySettings(object):
 
         try:
             b_esinstance = isinstance(other, EasySettings)
-        except:
+        except Exception:
             b_esinstance = False
 
         if b_esinstance:
@@ -851,7 +851,7 @@ class EasySettings(object):
 
         try:
             b_esinstance = isinstance(other, EasySettings)
-        except:
+        except Exception:
             b_esinstance = False
         if b_esinstance:
             set2 = other.settings
@@ -890,7 +890,7 @@ class EasySettings(object):
 
         try:
             b_esinstance = isinstance(other, EasySettings)
-        except:
+        except Exception:
             b_esinstance = False
         if b_esinstance:
             set2 = other.settings
@@ -903,12 +903,6 @@ class EasySettings(object):
             return False
         return ((len(self.settings) < len(set2)) or
                 self.compare_settings(set2))
-
-# Old EasySettings compatibility.
-
-
-class easysettings:
-    easysettings = EasySettings
 
 
 class esError(Exception):

@@ -88,10 +88,12 @@ done
 
 ((do_2 || do_3)) || fail_usage "-2 and -3 are useless when used together."
 
+((${#nonflags[@]} == 0)) && nonflags+=("easysettings")
+
 errs=0
 
 ((do_2)) && {
-    if nosetests-2.7 -v easysettings.test_easysettings; then
+    if nosetests-2.7 -v "${nonflags[@]}"; then
        echo_status "\nPython 2 tests passed."
     else
         let errs+=1
@@ -104,7 +106,7 @@ errs=0
     else
         testcmd='nosetests-3.4 -v'
     fi
-    if $testcmd easysettings.test_easysettings; then
+    if $testcmd "${nonflags[@]}"; then
         echo_status "\nPython 3 tests passed."
     else
         let errs+=1

@@ -14,7 +14,6 @@ Created on Jan 16, 2013
 from .easy_settings import (  # noqa
     EasySettings,
     __version__,
-    version,
     esError,
     esGetError,
     esSetError,
@@ -37,5 +36,4 @@ __all__ = [
     'esSetError',
     'esValueError',
     'load_json_settings',
-    'version',
 ]
