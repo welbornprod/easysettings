@@ -46,6 +46,9 @@ class SettingsBase(UserDict, object):
             self.data = {}
         self.filename = filename or None
 
+    def __bool__(self):
+        return bool(self.data)
+
     def __getattr__(self, key):
         """ Enable retrieval of settings through attributes. """
         if key in self.data:

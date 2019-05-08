@@ -3,8 +3,7 @@
 
 '''
   EasySettings
-  An easy interface for setting and retrieving application settings using
-  pickle or json.
+  An easy interface for setting and retrieving application settings.
 
 Created on Jan 16, 2013
 
@@ -25,10 +24,14 @@ from .json_settings import (
     JSONSettings,
     load_json_settings,
 )
-
+from .toml_settings import (
+    TOMLSettings,
+    load_toml_settings,
+)
 __all__ = [
     'EasySettings',
     'JSONSettings',
+    'TOMLSettings',
     'esCompareError',
     'esError',
     'esGetError',
@@ -36,4 +39,5 @@ __all__ = [
     'esSetError',
     'esValueError',
     'load_json_settings',
+    'load_toml_settings',
 ]
