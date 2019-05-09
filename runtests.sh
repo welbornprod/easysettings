@@ -38,6 +38,41 @@ function fail_usage {
     exit 1
 }
 
+function get_test_runners {
+    # Get all known test runners for every version and print them (sorted).
+    [[ -z "$PATH" ]] && { echo_err "PATH variable not set."; return 1; }
+    local pats pat exe dirpath basenames exename runners testrunner
+    declare -a pats=(
+        '.+/green-?[0-9].[0-9]'
+        '.+/nosetests-?[0-9].[0-9]'
+        '.+/python-?[0-9].[0-9]'
+    )
+    declare -a basenames
+    while IFS=$'\n' read -r dirpath; do
+        [[ -d "$dirpath" ]] || continue
+        for pat in "${pats[@]}"; do
+            while IFS=$'\n' read -r exe; do
+                exename="${exe##*/}"
+                [[ "${basenames[*]}" =~ $exename ]] || basenames+=("$exename")
+            done < <(find "$dirpath" -type f -regex "$pat")
+        done
+    done < <(echo -n "$PATH" | tr ':' '\n')
+    declare -a runners
+    for exename in "${basenames[@]}"; do
+        if [[ "$exename" =~ python ]]; then
+            runners+=("$exename -m unittest discover -v")
+        elif [[ "$exename" =~ nosetests ]]; then
+            runners+=("$exename --exe -v")
+        elif [[ "$exename" =~ green ]]; then
+            runners+=("$exename" "-vv")
+        fi
+    done
+    for testrunner in "${runners[@]}"; do
+        echo "$testrunner"
+    done | sort
+}
+
+
 function print_usage {
     # Show usage reason if first arg is available.
     [[ -n "$1" ]] && echo_err "\n$1\n"
@@ -48,9 +83,10 @@ function print_usage {
 
     Usage:
         $appscript -h | -v
-        $appscript (-2 | -3) [-n | -u]
+        $appscript (-a | -2 | -3) [-n | -u]
 
     Options:
+        -a,--all       : Run for all pythonX.Y executables.
         -2,--python2   : Run for python 2 only.
         -3,--python3   : Run for python 3 only.
         -h,--help      : Show this message.
@@ -61,6 +97,7 @@ function print_usage {
 }
 
 declare -a nonflags
+do_all=0
 do_2=1
 do_3=1
 do_nose=0
@@ -69,6 +106,11 @@ do_runhelp=0
 
 for arg; do
     case "$arg" in
+        "-a" | "--all")
+            do_all=1
+            do_2=0
+            do_3=0
+            ;;
         "-h" | "--help")
             print_usage ""
             exit 0
@@ -87,9 +129,11 @@ for arg; do
             exit 0
             ;;
         "-2" | "--python2")
+            do_all=0
             do_3=0
             ;;
         "-3" | "--python3")
+            do_all=0
             do_2=0
             ;;
         -*)
@@ -100,9 +144,13 @@ for arg; do
     esac
 done
 
-((do_2 || do_3)) || fail_usage "-2 and -3 are useless when used together."
+((!do_all && !do_2 && !do_3)) && fail_usage "-a, -2, and -3 are useless when used together."
 
-errs=0
+if ((!do_unittest && !do_nose)) && ! hash green2 green3 &>/dev/null; then
+    do_nose=1
+    echo "Green executables were not found."
+fi
+
 declare -a testargs
 noseargs=("--exe" "-v")
 testcmd2='nosetests-2.7'
@@ -110,19 +158,19 @@ testcmd3='nosetests-3.4'
 if ((do_nose)); then
     echo 'Using nosetests...'
     testargs=("${noseargs[@]}")
+    allpat="nosetests"
 elif ((do_unittest)); then
     echo 'Using unittest...'
     testcmd2='python2.7'
     testcmd3='python3.6'
     testargs=("-m" "unittest" "discover" "-v")
-elif hash green2 green3 &>/dev/null; then
+    allpat="python"
+else
     echo 'Using green...'
     testcmd2='green2'
     testcmd3='green3'
     testargs=("-vv")
-else
-    echo 'Using nosetests because green was not found...'
-    testargs=("${noseargs[@]}")
+    allpat="green"
 fi
 
 if ((do_runhelp)); then
@@ -135,7 +183,9 @@ if ((do_runhelp)); then
     exit
 fi
 
+errs=0
 testargs+=("${nonflags[@]}")
+
 ((do_2)) && {
     echo -e "\nRunning $testcmd2 ${testargs[*]}"
     if $testcmd2 "${testargs[@]}"; then
@@ -153,6 +203,18 @@ testargs+=("${nonflags[@]}")
         let errs+=1
         echo_err "\nPython 3 tests failed."
     fi
+}
+((do_all)) && {
+    while IFS=$'\n' read -r testrunner; do
+        [[ "$testrunner" =~ $allpat ]] || continue
+        echo -e "\nRunning $testrunner"
+        if $testrunner; then
+            echo_status "\n${testrunner%% *} tests passed."
+        else
+            let errs+=1
+            echo_err "${testrunner%% *} tests failed."
+        fi
+    done < <(get_test_runners)
 }
 
 ((errs)) && {

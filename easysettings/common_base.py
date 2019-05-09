@@ -58,6 +58,24 @@ class SettingsBase(UserDict, object):
             key,
         ))
 
+    def __setattr__(self, key, value):
+        """ Enable setting of keys through attributes. """
+        try:
+            object.__getattribute__(self, key)
+        except AttributeError:
+            # Not an existing attribute.
+            try:
+                data = object.__getattribute__(self, 'data')
+            except AttributeError:
+                # No self.data yet.
+                object.__setattr__(self, key, value)
+            else:
+                # A config key, not a real attribute.
+                if key in data:
+                    data[key] = value
+                    return
+        object.__setattr__(self, key, value)
+
     def get(self, option, default=NotSet):
         """ Like `dict.get`. Raises `KeyError` for missing keys if no
             default value is given.

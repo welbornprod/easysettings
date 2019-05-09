@@ -80,8 +80,23 @@ class SettingsBaseTests(object):
         self.assertEqual(
             val,
             'test',
-            msg='.get() failed to return default value!'
+            msg='.get() failed to return default value!',
         )
+
+    def test_getattr(self):
+        """ __getattr__ should return valid keys, and raise on invalid. """
+        settings = self.settings_cls(self.rawdict)
+        raisecatch = self.assertRaises(
+            AttributeError,
+            msg='getattr() failed to raise AttributeError!',
+        )
+        with raisecatch:
+            settings.does_not_exist
+
+        try:
+            settings.option1
+        except AttributeError:
+            self.fail('getattr() raised AttributeError on a valid key!')
 
     def test_hooks(self):
         """ load/save hooks should work. """
@@ -99,7 +114,7 @@ class SettingsBaseTests(object):
             '!{}'.format(teststr),
             msg='Failed to hook item on save: {!r}'.format(
                 nothooked['hook_test_1'],
-            )
+            ),
         )
 
         hooked = self.settings_hook.from_file(fname)
@@ -108,7 +123,7 @@ class SettingsBaseTests(object):
             teststr,
             msg='Failed to hook item on load: {!r}'.format(
                 nothooked['hook_test_1'],
-            )
+            ),
         )
 
     def test_load_save(self):
@@ -127,7 +142,7 @@ class SettingsBaseTests(object):
 
         self.assertTrue(
             ('option3' in rawdata) and ('value3' in rawdata),
-            msg='Could not find new option in saved data!'
+            msg='Could not find new option in saved data!',
         )
 
         with self.assertRaises(FileNotFoundError, msg='Didn\'t raise on load!'):
@@ -154,7 +169,7 @@ class SettingsBaseTests(object):
         )
         self.assertDictEqual(
             self.rawdict, settings.data,
-            msg='Failed to load dict settings from file with default key.'
+            msg='Failed to load dict settings from file with default key.',
         )
         # Default values should be added when not set.
         settings = self.load_func(
@@ -166,7 +181,62 @@ class SettingsBaseTests(object):
         d['option3'] = 'SHOULD_SET'
         self.assertDictEqual(
             d, settings.data,
-            msg='Failed to add default setting.'
+            msg='Failed to add default setting.',
+        )
+
+    def test_setattr(self):
+        """ setattr() should work for config keys and normal attributes. """
+        settings = self.settings_cls(self.rawdict)
+        # Key was set during init.
+        settings.option1 = 'my_value'
+        self.assertEqual(
+            settings['option1'],
+            'my_value',
+            msg='Failed to set config key through attribute!',
+        )
+
+        # Not a key at all.
+        settings.real_attr = 'my_real_value'
+        self.assertNotIn(
+            'real_attr',
+            settings.data,
+            msg='Shouldn\'t create config keys through attributes!',
+        )
+
+        # Key was set through the 'set()' method.
+        settings.set('mykey', 'myvalue')
+        self.assertEqual(
+            settings.mykey,
+            'myvalue',
+        )
+
+        settings.mykey = 'mynewvalue'
+        self.assertEqual(
+            settings['mykey'],
+            'mynewvalue',
+            msg='Failed to set config key through attribute!',
+        )
+
+        # Both real and config keys exist.
+        settings.original_attr = 'original_value'
+        settings['original_attr'] = 'config_value'
+
+        self.assertEqual(
+            settings.original_attr,
+            'original_value',
+            msg='getattr() should always return the real attribute.',
+        )
+
+        settings.original_attr = 'changed_value'
+        self.assertEqual(
+            settings['original_attr'],
+            'config_value',
+            msg='setattr() should always change the real attribute.',
+        )
+        self.assertEqual(
+            settings.original_attr,
+            'changed_value',
+            msg='setattr() did not change the real attribute.',
         )
 
 
