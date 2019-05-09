@@ -36,8 +36,11 @@ setup(
     license='LICENSE.txt',
     description=open('DESC.txt').read(),
     long_description=longdesc,
-    keywords=('python module library 2 3 settings easy '
-              'config setting configuration applications app'),
+    keywords=' '.join((
+        'python module library 2 3 settings easy',
+        'config setting configuration applications app',
+        'json toml yaml pickle ini dict userdict',
+    )),
     classifiers=[
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX :: Linux',
