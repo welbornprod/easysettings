@@ -7,24 +7,24 @@
     -Christopher Welborn 07-14-2015
 """
 from __future__ import print_function
-import json
 import os
 import sys
 import tempfile
 import unittest
 
 from . import (
-    version,
+    __version__ as version,
     EasySettings,
-    JSONSettings,
-    load_json_settings,
 )
 
 
-print('\n'.join((
-    'Testing EasySettings v. {esver}',
-    'Using Python {v.major}.{v.minor}.{v.micro}.',
-)).format(esver=version(), v=sys.version_info))
+if sys.version_info.major < 3:
+    FileNotFoundError = IOError
+
+NONEXISTENT_FILE = 'NONEXISTENT_FILE'
+if os.path.exists(NONEXISTENT_FILE):
+    # It's happened before, because of a test failure. :(
+    os.remove(NONEXISTENT_FILE)
 
 
 class EasySettingsTests(unittest.TestCase):
@@ -412,93 +412,10 @@ class EasySettingsTests(unittest.TestCase):
             )
 
 
-class JSONSettingsTests(unittest.TestCase):
-    """ Tests pertaining to JSONSettings. """
-
-    def setUp(self):
-        # Setup a test json file to work with.
-        self.rawdict = {'option1': 'value1', 'option2': 'value2'}
-        fd, fname = tempfile.mkstemp(suffix='.json', prefix='easysettings.')
-        os.write(fd, json.dumps(self.rawdict, indent=4).encode())
-        os.close(fd)
-        self.testfile = fname
-
-    def test_get(self):
-        """ JSONSettings.get should raise on missing keys. """
-        settings = JSONSettings(self.rawdict)
-        # Non-existing key should raise.
-        with self.assertRaises(KeyError, msg='.get() failed to raise!'):
-            settings.get('NOT_AN_OPTION')
-        # Existing key.
-        val = settings.get('option1', None)
-        self.assertEqual(
-            val,
-            'value1',
-            msg='.get() failed to return an existing value!'
-        )
-        # Default should be honored.
-        val = settings.get('NOT_AN_OPTION', default='test')
-        self.assertEqual(
-            val,
-            'test',
-            msg='.get() failed to return default value!'
-        )
-
-    def test_json_load_save(self):
-        """ JSONSettings loads and saves JSON files """
-        settings = JSONSettings.from_file(self.testfile)
-        self.assertDictEqual(
-            self.rawdict, settings.data,
-            msg='Failed to load dict settings from file.'
-        )
-
-        settings['option3'] = 'value3'
-        settings.save()
-
-        with open(self.testfile) as f:
-            rawdata = f.read()
-
-        self.assertTrue(
-            ('option3' in rawdata) and ('value3' in rawdata),
-            msg='Could not find new option in saved data!'
-        )
-
-    def test_load_json_settings(self):
-        """ load_json_settings should ignore FileNotFound and handle defaults.
-        """
-        try:
-            settings = load_json_settings('NONEXISTENT_FILE')
-        except FileNotFoundError:
-            self.fail(
-                'load_json_settings should not raise FileNotFoundError.'
-            )
-        # Settings should still load, even when the file doesn't exist.
-        self.assertIsInstance(settings, JSONSettings)
-        # Settings should be an empty JSONSettings.
-        self.assertFalse(bool(settings))
-
-        # Default values should not override existing values.
-        settings = load_json_settings(
-            self.testfile,
-            default={'option1': 'SHOULD_NOT_SET'},
-        )
-        self.assertDictEqual(
-            self.rawdict, settings.data,
-            msg='Failed to load dict settings from file with default key.'
-        )
-        # Default values should be added when not set.
-        settings = load_json_settings(
-            self.testfile,
-            default={'option1': 'SHOULD_NOT_SET', 'option3': 'SHOULD_SET'},
-        )
-
-        d = {k: self.rawdict[k] for k in self.rawdict}
-        d['option3'] = 'SHOULD_SET'
-        self.assertDictEqual(
-            d, settings.data,
-            msg='Failed to add default setting.'
-        )
-
-
 if __name__ == '__main__':
+    print('\n'.join((
+        'Testing EasySettings v. {esver}',
+        'Using Python {v.major}.{v.minor}.{v.micro}.',
+    )).format(esver=version(), v=sys.version_info))
+
     sys.exit(unittest.main(argv=sys.argv))

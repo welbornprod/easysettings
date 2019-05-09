@@ -6,150 +6,43 @@ settings. Handles non-string types like boolean, integer, long, list, as
 well as normal string settings. No sections needed, just set(), get(),
 and save().
 
-A JSONSettings object is also included to allow easily saving/retrieving
-settings in JSON format.
+There are `other ``*Settings``
+objects <#jsonsettings-tomlsettings-and-yamlsettings>`__ that allow you
+to use a standard format, such as:
+
+-  `JSONSettings <#jsonsettings-example>`__ - ``UserDict`` that has
+   methods to load/save config in JSON format. ``load_json_settings()``
+   is the preferred method for loading config files.
+
+-  `TOMLSettings <#tomlsettings-example>`__ - ``UserDict`` that has
+   methods to load/save config in TOML format. ``load_toml_settings()``
+   is the preferred method for loading config files.
+
+-  `YAMLSettings <#yamlsettings-example>`__ - ``UserDict`` that has
+   methods to load/save config in YAML format. ``load_yaml_settings()``
+   is the preferred method for loading config files.
 
 Bug Fixes
 ---------
 
--  Version 2.1.4:
+-  Version 3.2.0:
 
-   ``get()`` and ``get_bool()`` will honor default values when the key
-   doesn't exist. Fixes Issue #3.
+New config formats were added, like ``JSONSettings`` you can now use
+``TOMLSettings`` (through the ``toml`` package) and ``YAMLSettings``
+(through the ``pyyaml`` package).
 
-   Python 2 compatibility bug fixed.
+It should be possible to use ``EasySettings`` and ``JSONSettings``
+without these new dependencies. They are only required if you want the
+new ``*Settings`` formats.
 
--  Version 2.1.0:
+-  Version 3.0.0:
 
-Added ``bool(EasySettings())``. It's the same as
-``bool(EasySettings().settings)``. Some other code was linted.
+Custom ``JSONEncoder``/``JSONDecoder`` classes can be used in
+``JSONSettings``, and settings/items can be hooked after
+decoding/loading or before encoding/saving.
 
--  Version 2.0.4:
-
-Simplization/clean-up, added unit tests for comparison operators.
-
--  Version 2.0.2:
-
-The ``repr()``\ for EasySettings was modified slightly to better
-represent python syntax.
-
--  Version 2.0.1:
-
-Added unit tests and ``JSONSettings``/``JSONMixin``.
-
-``JSONSettings`` is a ``UserDict`` with a few extra methods for saving
-settings as JSON. It uses ``JSONMixin`` to achieve this.
-
-You can ``load()``, ``save()``, and ``setsave()`` settings to/from a
-JSON file as a dict. There is also a class method,
-``JSONSettings.from_file()`` for loading existing settings.
-
-The ``get()`` function is just the native ``dict.get()``, though a
-``set()`` function was added to make this more compatible with
-``EasySettings``. The ``__setitem__()`` method is preferred
-(``mysettings[option] = value``) over ``set()``.
-
--  Version 1.9.3-5:
-
-Added get\_bool(option). Parses string values as booleans in a human
-friendly way. Solves the ``bool('false') != False`` problem. This is not
-required because EasySettings already saves boolean values.
-``settings.set('opt', False)`` will already do
-``settings.get('opt') == False``. This is for when you want to parse the
-values ``true/false``, ``yes/no``, ``on/off``, ``1/0`` as a boolean and
-get the correct result. The strings are not case-sensitive.
-
-By default, any value that is not a known ``False`` value is returned
-``True``, though there is a ``strict`` option that will return
-``default`` for unknown values.
-
-When used on non-string values ``bool(value)`` is returned.
-
--  Version 1.9.3-2:
-
-Changed default returns in EasySettings.get(). None is a valid default
-return now. Empty string will be returned if no default is set, but any
-other default setting will be honored.
-
--  Version 1.9.3:
-
-Added ``EasySettings.header`` and initialization arguments.
-
-Usage:
-
-.. code:: python
-
-    appdesc = 'My beautiful application.\nUse wisely.'
-    settings = EasySettings('myfile.conf', name='MyApp', version='1.0.0', header=appdesc)
-    # or for an existing EasySettings() instance:
-    # settings.header = appdesc
-    settings.setsave('option', 'value')
-
-Now when ``save()`` is called the configuration file will look like
-this:
-
-::
-
-    # Configuration for MyApp v1.0.0
-    # My beautiful application.
-    # Use wisely.
-    option=value
-
--  Version 1.9.2:
-
-Package changes. Switched README to automatically convert markdown to
-rst using pypandoc.
-
--  Version 1.8.8:
-
-Small changes were made to help compatibility issues between the old and
-new package layouts. You can still do:
-``from easysettings import easysettings`` and then
-``easysettings.easysettings`` if you have to. The new method is much
-better though.
-
--  Version 1.8.7:
-
-Changed package layout. Instead of
-``from easysettings.easysettings import easysettings``, the simple form
-of \`from easysettings import EasySettings' can be used. The main class
-has been given a proper class name.
-
--  Version 1.8.6:
-
-Fixed small bug in ``setsave()`` where ``setsave('opt', False)`` caused
-errors.
-
--  Version 1.8.3:
-
-Non-string types were not being loaded or saved properly. All issues are
-resolved. The method has been enhanced so debug printing will be
-'prettier'. Example of 'debug printing' settings:
-
-.. code:: python
-
-    from easysettings import easysettings
-    settings = EasySettings('myconfigfile.conf')
-    settings.set('option', True)
-    settings.set('option2', ['cjw', 'amy', 'joseph'])
-    print settings
-    # this will now print as:
-    #     {'option': True, 'option2', ['cjw', 'amy', 'joseph']}
-    # instead of pickle's messed up looking strings like:
-    #    {'option': I01\n.  (for a True boolean value), ... }
-
-This fix also allows you to save values with the newline character in
-them. So code like this will work:
-
-.. code:: python
-
-    settings.set('mytext', 'this\nstring\n\has\nnewlines.')
-    print settings.get('mytext')
-    # this will result in:
-    #     this
-    #    string
-    #    has
-    #    newlines.
+This allows you to modify the values in any way you see fit by
+subclassing.
 
 Examples
 --------
@@ -192,7 +85,7 @@ Example of Easy Settings basic usage:
     settings.setsave("homedir", "/myuserdir")
 
 Advanced:
-^^^^^^^^^
+~~~~~~~~~
 
 .. code:: python
 
@@ -215,7 +108,7 @@ Advanced:
         settings.clear_values()
 
 Comparison:
-^^^^^^^^^^^
+~~~~~~~~~~~
 
 .. code:: python
 
@@ -272,7 +165,7 @@ same type that was set:
 
 .. code:: python
 
-    es = EasySettings('myconfigfile.conf)
+    es = EasySettings('myconfigfile.conf')
 
     # Boolean
     es.set("newuser", True)
@@ -361,34 +254,96 @@ this:
     if not os.path.isfile(settings.configfile):
         print 'config file does not exist, and was not created.'
 
-JSONSettings:
-=============
+JSONSettings, TOMLSettings, and YAMLSettings:
+=============================================
 
-The ``JSONSettings`` object is a simple ``UserDict`` that allows loading
-and saving in JSON format. All keys and values must be JSON
-serializable.
+All of the ``*Settings`` objects are simple ``UserDict``\ s that allow
+loading and saving in the specified format. All keys and values must be
+serializable using the specified format.
 
 JSONSettings Example:
+---------------------
 
 .. code:: python
 
     from easysettings import JSONSettings
 
     # Starting from scratch:
-    js = JSONSettings()
+    js = JSONSettings(filename='myfile.json')
     js['option'] = 'value'
-    js.save(filename='myfile.json')
+    js.save()
 
-    # Loading existing settings:
-    js = JSONSettings()
-    js.load('myfile.json')
+.. code:: python
+
+    from easysettings import JSONSettings, load_json_settings
+    # Loading settings that may not exist yet:
+    js = load_json_settings('myfile.json', default={'option': 'mydefault'})
     print(js['option'])
 
     # Set an item and save the settings.
     js.setsave('option2', 'value2', sort_keys=True)
 
-    # Alternate load method:
+    # Alternate load method, may raise FileNotFoundError.
     js = JSONSettings.from_file('myjsonfile.json')
+
+The same goes for ``TOMLSettings`` and ``YAMLSettings``.
+
+TOMLSettings Example:
+---------------------
+
+.. code:: python
+
+    # `toml` must be installed, though you don't have to import it.
+    import toml
+
+    from easysettings import TOMLSettings
+
+    # Starting from scratch:
+    ts = TOMLSettings(filename='myfile.toml')
+    ts['option'] = 'value'
+    ts.save()
+
+.. code:: python
+
+    from easysettings import TOMLSettings, load_toml_settings
+
+    # Loading settings that may not exist yet:
+    ts = load_toml_settings('myfile.toml', default={'option': 'mydefault'})
+    print(ts['option'])
+
+    # Set an item and save the settings.
+    ts.setsave('option2', 'value2')
+
+    # Alternate load method, may raise FileNotFoundError.
+    ts = TOMLSettings.from_file('mytomlfile.toml')
+
+YAMLSettings Example:
+---------------------
+
+.. code:: python
+
+    # `pyyaml` must be installed, though you don't have to import it.
+    import yaml
+    from easysettings import YAMLSettings
+
+    # Starting from scratch:
+    ys = YAMLSettings(filename='myfile.yaml')
+    ys['option'] = 'value'
+    ys.save()
+
+.. code:: python
+
+    from easysettings import YAMLSettings, load_yaml_settings
+
+    # Loading settings that may not exist yet:
+    ys = load_yaml_settings('myfile.yaml', default={'option': 'mydefault'})
+    print(ys['option'])
+
+    # Set an item and save the settings.
+    ys.setsave('option2', 'value2')
+
+    # Alternate load method, may raise FileNotFoundError.
+    ys = YAMLSettings.from_file('myyamlfile.yaml')
 
 PyPi Package
 ============
@@ -420,7 +375,20 @@ Website
 Be sure to visit http://welbornprod.com for more projects and
 information from Welborn Productions.
 
-|I Love Open Source|
+Notes
+=====
 
-.. |I Love Open Source| image:: http://www.iloveopensource.io/images/logo-lightbg.png
-   :target: http://www.iloveopensource.io/projects/53e6d33587659fce660044f9
+Since you've scrolled all the way down here, I thought I would tell you
+that the ``EasySettings`` class itself was created a long time ago, when
+I was still learning Python. I don't use that specific class anymore. I
+prefer to use the other ``*Settings`` classes in the ``easysettings``
+package. I've been fixing bugs and adding features in all of the
+``easysettings`` code for years now, so I don't want to say that it's
+"abandoned" or "deprecated". It was designed for me at the time, a
+beginner, so maybe it's still useful for beginners, but the other
+classes are much cleaner and not so opinionated. They're also widely
+accepted config formats, where the ``EasySettings`` format (a mix of
+custom ``INI`` and Python's ``pickle``) is not. They raise exceptions
+instead of silently trying to "do the right thing".
+
+It's better to be explicit than implicit.

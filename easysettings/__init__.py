@@ -3,8 +3,7 @@
 
 '''
   EasySettings
-  An easy interface for setting and retrieving application settings using
-  pickle or json.
+  An easy interface for setting and retrieving application settings.
 
 Created on Jan 16, 2013
 
@@ -14,7 +13,6 @@ Created on Jan 16, 2013
 from .easy_settings import (  # noqa
     EasySettings,
     __version__,
-    version,
     esError,
     esGetError,
     esSetError,
@@ -23,15 +21,23 @@ from .easy_settings import (  # noqa
     esValueError,
 )
 from .json_settings import (
-    JSONMixin,
     JSONSettings,
     load_json_settings,
+)
+from .toml_settings import (
+    TOMLSettings,
+    load_toml_settings,
+)
+from .yaml_settings import (
+    YAMLSettings,
+    load_yaml_settings,
 )
 
 __all__ = [
     'EasySettings',
-    'JSONMixin',
     'JSONSettings',
+    'TOMLSettings',
+    'YAMLSettings',
     'esCompareError',
     'esError',
     'esGetError',
@@ -39,5 +45,6 @@ __all__ = [
     'esSetError',
     'esValueError',
     'load_json_settings',
-    'version',
+    'load_toml_settings',
+    'load_yaml_settings',
 ]
