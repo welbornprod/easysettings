@@ -28,10 +28,16 @@ from .toml_settings import (
     TOMLSettings,
     load_toml_settings,
 )
+from .yaml_settings import (
+    YAMLSettings,
+    load_yaml_settings,
+)
+
 __all__ = [
     'EasySettings',
     'JSONSettings',
     'TOMLSettings',
+    'YAMLSettings',
     'esCompareError',
     'esError',
     'esGetError',
@@ -40,4 +46,5 @@ __all__ = [
     'esValueError',
     'load_json_settings',
     'load_toml_settings',
+    'load_yaml_settings',
 ]

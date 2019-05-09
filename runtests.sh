@@ -48,25 +48,39 @@ function print_usage {
 
     Usage:
         $appscript -h | -v
-        $appscript -2 | -3
+        $appscript (-2 | -3) [-n | -u]
 
     Options:
-        -2,--python2  : Run for python 2 only.
-        -3,--python3  : Run for python 3 only.
-        -h,--help     : Show this message.
-        -v,--version  : Show $appname version and exit.
+        -2,--python2   : Run for python 2 only.
+        -3,--python3   : Run for python 3 only.
+        -h,--help      : Show this message.
+        -n,--nose      : Use nosetests.
+        -u,--unittest  : Use unittest module.
+        -v,--version   : Show $appname version and exit.
     "
 }
 
 declare -a nonflags
 do_2=1
 do_3=1
+do_nose=0
+do_unittest=0
+do_runhelp=0
 
 for arg; do
     case "$arg" in
         "-h" | "--help")
             print_usage ""
             exit 0
+            ;;
+        "-H" | "--runhelp")
+            do_runhelp=1
+            ;;
+        "-n" | "--nose")
+            do_nose=1
+            ;;
+        "-u" | "--unittest")
+            do_unittest=1
             ;;
         "-v" | "--version")
             echo -e "$appname v. $appversion\n"
@@ -88,12 +102,43 @@ done
 
 ((do_2 || do_3)) || fail_usage "-2 and -3 are useless when used together."
 
-((${#nonflags[@]} == 0)) && nonflags+=("easysettings")
-
 errs=0
+declare -a testargs
+noseargs=("--exe" "-v")
+testcmd2='nosetests-2.7'
+testcmd3='nosetests-3.4'
+if ((do_nose)); then
+    echo 'Using nosetests...'
+    testargs=("${noseargs[@]}")
+elif ((do_unittest)); then
+    echo 'Using unittest...'
+    testcmd2='python2.7'
+    testcmd3='python3.6'
+    testargs=("-m" "unittest" "discover" "-v")
+elif hash green2 green3 &>/dev/null; then
+    echo 'Using green...'
+    testcmd2='green2'
+    testcmd3='green3'
+    testargs=("-vv")
+else
+    echo 'Using nosetests because green was not found...'
+    testargs=("${noseargs[@]}")
+fi
 
+if ((do_runhelp)); then
+    testargs+=("--help")
+    ((do_3)) && {
+        $testcmd3 "${testargs[@]}"
+        exit
+    }
+    $testcmd2 "${testargs[@]}"
+    exit
+fi
+
+testargs+=("${nonflags[@]}")
 ((do_2)) && {
-    if nosetests-2.7 -v "${nonflags[@]}"; then
+    echo -e "\nRunning $testcmd2 ${testargs[*]}"
+    if $testcmd2 "${testargs[@]}"; then
        echo_status "\nPython 2 tests passed."
     else
         let errs+=1
@@ -101,12 +146,8 @@ errs=0
     fi
 }
 ((do_3)) && {
-    if hash green3 &>/dev/null; then
-        testcmd='green3 -vv'
-    else
-        testcmd='nosetests-3.4 -v'
-    fi
-    if $testcmd "${nonflags[@]}"; then
+    echo -e "\nRunning $testcmd3 ${testargs[*]}"
+    if $testcmd3 "${testargs[@]}"; then
         echo_status "\nPython 3 tests passed."
     else
         let errs+=1
