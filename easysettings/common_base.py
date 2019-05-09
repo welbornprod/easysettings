@@ -30,13 +30,54 @@ class _NotSet(object):
 NotSet = _NotSet()
 
 
+def load_settings(cls, filename, default=None, **kwargs):
+    """ Tries to create a `cls` instance from a filename, but returns a new
+        `cls` instance if the file does not exist.
+         This handles common logic for all SettingsBase subclasses.
+
+        This is a convenience function for the common try/catch block used
+        when `cls` is used for the first time.
+        Instead of:
+            try:
+                config = cls.from_file(myfile)
+            catch FileNotFoundError:
+                config = cls()
+                config.filename = myfile
+
+        Just do this:
+            config = load_settings(cls, myfile)
+
+        The `default` is merged into existing config, for keys that don't exist
+        already.
+
+        Arguments:
+            cls       : The class instance to create.
+            filename  : File path to load, or try to load.
+            default   : Default dict for config keys/values.
+                        Keys from an existing config file are merged into
+                        this default dict.
+            **kwargs  : Extra arguments for the class's `.from_file()` method,
+                        and `cls.__init__()` (whichever is used).
+    """
+    try:
+        # Existing file?
+        config = cls.from_file(filename, **kwargs)
+    except FileNotFoundError:
+        # New config, no file yet.
+        config = cls(filename=filename, **kwargs)
+    # Set any defaults passed in, if not already set.
+    for k in (default or {}):
+        config.setdefault(k, default[k])
+    return config
+
+
 # Explicitly inheriting from `object` for Python 2.7. Not an old-style class.
 class SettingsBase(UserDict, object):
     """ Base class for all *Settings classes. Holds shared methods. """
     def __init__(self, iterable=None, filename=None, **kwargs):
-        """ Initialize a JSONSettings instance like a `dict`, with optional
-            `encoder` and `decoder` arguments for
-            JSONEncoder/JSONDecoder instances.
+        """ Initialize a SettingsBase instance like a `dict`, with optional
+            `filename` argument (must be set before `save()` or `load()`,
+            but can be set with those methods at the time).
         """
         if iterable:
             self.data = dict(iterable)

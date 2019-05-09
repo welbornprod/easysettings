@@ -10,13 +10,9 @@
 import json
 
 from .common_base import (
+    load_settings,
     SettingsBase,
 )
-try:
-    from .common_base import FileNotFoundError
-except ImportError:
-    # Python 3, don't need to import this name.
-    pass
 
 __all__ = ['JSONSettings', 'load_json_settings']
 
@@ -41,19 +37,13 @@ def load_json_settings(
         The `default` is merged into existing config, for keys that don't exist
         already.
     """
-    try:
-        config = (cls or JSONSettings).from_file(
-            filename,
-            encoder=encoder,
-            decoder=decoder,
-        )
-    except FileNotFoundError:
-        config = JSONSettings(encoder=encoder, decoder=decoder)
-        config.filename = filename
-    # Set any defaults passed in, if not already set.
-    for k in (default or {}):
-        config.setdefault(k, default[k])
-    return config
+    return load_settings(
+        cls or JSONSettings,
+        filename,
+        default=default,
+        encoder=encoder,
+        decoder=decoder,
+    )
 
 
 class JSONSettings(SettingsBase):
@@ -70,7 +60,11 @@ class JSONSettings(SettingsBase):
         """
         self.encoder = encoder
         self.decoder = decoder
-        super(JSONSettings, self).__init__(iterable=iterable, filename=filename, **kwargs)
+        super(JSONSettings, self).__init__(
+            iterable=iterable,
+            filename=filename,
+            **kwargs
+        )
 
     @classmethod
     def from_file(cls, filename, encoder=None, decoder=None):
