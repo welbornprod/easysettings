@@ -16,6 +16,9 @@ import json
 import toml
 import yaml
 
+from .common_base import (
+    BackedUpWriter,
+)
 from .json_settings import (
     load_json_settings,
     JSONSettings,
@@ -36,6 +39,98 @@ except NameError:
     FileNotFoundError = IOError
 
 
+class BackedUpWriterTests(unittest.TestCase):
+    """ Tests for the BackedUpWriter class. """
+    def setUp(self):
+        self.fmt = '{}~'
+
+    def make_temp_file(self):
+        return tempfile.mkstemp(
+            suffix='.txt',
+            prefix='easysettings.BackedUpWriter.'
+        )
+
+    def make_temp_filename(self):
+        return tempfile.mktemp(
+            suffix='.txt',
+            prefix='easysettings.BackedUpWriter.',
+        )
+
+    def test_backs_up(self):
+        """ Should backup files while opening a file in write mode. """
+        fd, fname = self.make_temp_file()
+        os.write(fd, 'Test Content'.encode())
+        os.close(fd)
+
+        backupname = self.fmt.format(fname)
+        with BackedUpWriter(fname, fmt=self.fmt) as f:
+            self.assertTrue(
+                os.path.exists(backupname),
+                msg='Failed to create backup file: {}'.format(backupname),
+            )
+            f.write('Changed Content')
+
+        # Everything went okay, backup file should be gone.
+        self.assertFalse(
+            os.path.exists(backupname),
+            msg='Failed to remove backup file: {}'.format(backupname),
+        )
+        with open(fname, 'r') as f:
+            self.assertEqual(
+                f.read(),
+                'Changed Content',
+                msg='Writing without errors resulted in a bad file!',
+            )
+
+    def test_new_files(self):
+        """ Should remove new files when errors occur while creating them. """
+        newfilename = self.make_temp_filename()
+        backupname = self.fmt.format(newfilename)
+        try:
+            with BackedUpWriter(newfilename, fmt=self.fmt) as f:
+                f.write('APPLE BANANA CIDER')
+                raise ValueError('Raising an error to trigger file removal.')
+        except ValueError:
+            pass
+
+        self.assertFalse(
+            os.path.exists(newfilename),
+            msg='Failed to remove new file on errors.',
+        )
+        self.assertFalse(
+            os.path.exists(backupname),
+            msg='Shouldn\'t have created a backup for a new file.',
+        )
+
+    def test_restores(self):
+        """ Should restore original files on error. """
+        fd, fname = self.make_temp_file()
+        os.write(fd, 'Test Content'.encode())
+        os.close(fd)
+        fmt = '{}~'
+        backupname = fmt.format(fname)
+        try:
+            with BackedUpWriter(fname, fmt=fmt) as f:
+                f.write('BLAH BLAH BLAH')
+                raise ValueError('Raising an error to trigger restore.')
+        except ValueError:
+            pass
+        self.assertFalse(
+            os.path.exists(backupname),
+            msg='Failed to remove/restore the backup file: {}'.format(
+                backupname,
+            ),
+        )
+        with open(fname, 'r') as f:
+            self.assertEqual(
+                f.read(),
+                'Test Content',
+                msg='Failed to restore backed up content from: {}'.format(
+                    fname,
+                ),
+            )
+
+
 class SettingsBaseTests(object):
     """ Tests pertaining to subclasses of SettingsBase. """
     module = None
@@ -46,20 +141,25 @@ class SettingsBaseTests(object):
     def setUp(self):
         """ Setup a test {format} file to work with. """
         self.rawdict = {'option1': 'value1', 'option2': 'value2'}
-        fd, fname = self.make_tempfile()
-        os.close(fd)
+        fname = self.make_temp_filename()
         with open(fname, 'w') as f:
             self.module.dump(self.rawdict, f)
         self.testfile = fname
 
         self.settings_hook = create_settings_hook(self.settings_cls)
 
-    def make_tempfile(self):
+    def make_temp_file(self):
         return tempfile.mkstemp(
             suffix='.{}'.format(
                 self.extension.lstrip('.') or self.module.__name__
             ),
             prefix='easysettings.'
+        )
+
+    def make_temp_filename(self):
+        return tempfile.mktemp(
+            suffix='.txt',
+            prefix='easysettings.BackedUpWriter.',
         )
 
     def test_get(self):
@@ -100,8 +200,7 @@ class SettingsBaseTests(object):
 
     def test_hooks(self):
         """ load/save hooks should work. """
-        fd, fname = self.make_tempfile()
-        os.close(fd)
+        fname = self.make_temp_filename()
         teststr = 'testing'
         settings = self.settings_hook(
             {'hook_test_1': teststr},
@@ -240,11 +339,11 @@ class SettingsBaseTests(object):
         )
 
 
-class JSONSettingsBaseTests(object):
+class JSONSettingsBaseTests(SettingsBaseTests):
     def test_encoder_decoder(self):
         """ JSONSettings should support custom JSONEncoders/Decoders. """
-        fd, fname = self.make_tempfile()
-        os.close(fd)
+        fname = self.make_temp_filename()
+
         settings = JSONSettings(
             self.rawdict,
             decoder=CustomDecoder,
