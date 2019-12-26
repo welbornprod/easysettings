@@ -11,10 +11,15 @@ import os
 import sys
 import tempfile
 import unittest
+from datetime import (
+    date,
+    datetime,
+)
 
 from . import (
     __version__ as version,
     EasySettings,
+    ISO8601,
 )
 
 
@@ -43,6 +48,24 @@ class EasySettingsTests(unittest.TestCase):
             ('option{}'.format(i), 'value{}'.format(i))
             for i in range(1, 4)
         ]
+
+    def assertDateEqual(self, d1, d2, msg=None):
+        acceptable = (date, datetime)
+        if not (isinstance(d1, acceptable) and isinstance(d2, acceptable)):
+            acceptables = '({})'.format(', '.join(
+                type(x).__name__
+                for x in acceptable
+            ))
+            raise TypeError('Expecting {}, got: {!r} and {!r}'.format(
+                acceptables,
+                type(d1).__name__,
+                type(d2).__name__
+            ))
+        self.assertEqual(d1.strftime(ISO8601), d2.strftime(ISO8601), msg=msg)
+
+    def clear_file(self, filename):
+        with open(filename, 'w') as f:
+            f.write('# Test settings.')
 
     def test_compare_opts(self):
         """ compare_settings() should make a good comparison. """
@@ -202,6 +225,25 @@ class EasySettingsTests(unittest.TestCase):
             es1,
             es2,
             msg='EasySettings with less options was not less or equal!'
+        )
+
+    def test_datetimes(self):
+        """ EasySettings handles dates/datetimes. """
+        self.clear_file(self.testfile)
+        settings = EasySettings(self.testfile)
+        d = datetime.now()
+        settings.set('today', d.date())
+        settings.setsave('now', d)
+        loaded = EasySettings(self.testfile)
+        self.assertDateEqual(
+            d,
+            loaded.get('now'),
+            msg='Failed to serialize datetime.'
+        )
+        self.assertDateEqual(
+            d.date(),
+            loaded.get('today'),
+            msg='Failed to serialize date.'
         )
 
     def test_list_values(self):

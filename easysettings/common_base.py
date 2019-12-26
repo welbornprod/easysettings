@@ -4,6 +4,9 @@
     Common methods for *Settings classes.
     -Christopher Welborn 05-07-2019
 """
+
+import os
+import shutil
 try:
     from collections import UserDict
 except ImportError:
@@ -14,7 +17,7 @@ try:
     FileNotFoundError
 except NameError:
     # Python 2..
-    FileNotFoundError = EnvironmentError
+    FileNotFoundError = IOError
 
 
 class _NotSet(object):
@@ -30,21 +33,66 @@ class _NotSet(object):
 NotSet = _NotSet()
 
 
+def load_settings(cls, filename, default=None, **kwargs):
+    """ Tries to create a `cls` instance from a filename, but returns a new
+        `cls` instance if the file does not exist.
+         This handles common logic for all SettingsBase subclasses.
+
+        This is a convenience function for the common try/catch block used
+        when `cls` is used for the first time.
+        Instead of:
+            try:
+                config = cls.from_file(myfile)
+            catch FileNotFoundError:
+                config = cls()
+                config.filename = myfile
+
+        Just do this:
+            config = load_settings(cls, myfile)
+
+        The `default` is merged into existing config, for keys that don't exist
+        already.
+
+        Arguments:
+            cls       : The class instance to create.
+            filename  : File path to load, or try to load.
+            default   : Default dict for config keys/values.
+                        Keys from an existing config file are merged into
+                        this default dict.
+            **kwargs  : Extra arguments for the class's `.from_file()` method,
+                        and `cls.__init__()` (whichever is used).
+    """
+    defaults = default or {}
+    try:
+        # Existing file?
+        config = cls.from_file(filename, **kwargs)
+        # Set any defaults passed in, if not already set.
+        for k, v in config.load_hook(defaults).items():
+            config.setdefault(k, v)
+        config.set_defaults(defaults)
+    except FileNotFoundError:
+        # New config, no file yet.
+        config = cls(defaults, filename=filename, **kwargs)
+    return config
+
+
 # Explicitly inheriting from `object` for Python 2.7. Not an old-style class.
 class SettingsBase(UserDict, object):
     """ Base class for all *Settings classes. Holds shared methods. """
     def __init__(self, iterable=None, filename=None, **kwargs):
-        """ Initialize a JSONSettings instance like a `dict`, with optional
-            `encoder` and `decoder` arguments for
-            JSONEncoder/JSONDecoder instances.
+        """ Initialize a SettingsBase instance like a `dict`, with optional
+            `filename` argument (must be set before `save()` or `load()`,
+            but can be set with those methods at the time).
         """
         if iterable:
             self.data = dict(iterable)
         elif kwargs:
-            self.data = {k: v for k, v in kwargs.items()}
+            self.data = self.load_hook({k: v for k, v in kwargs.items()})
         else:
             self.data = {}
         self.filename = filename or None
+        self.defaults = {}
+        self.set_defaults(self.data)
 
     def __bool__(self):
         return bool(self.data)
@@ -75,6 +123,10 @@ class SettingsBase(UserDict, object):
                     data[key] = value
                     return
         object.__setattr__(self, key, value)
+
+    @classmethod
+    def from_file(cls, filename):
+        raise NotImplementedError('SettingsBase should not be used directly.')
 
     def get(self, option, default=NotSet):
         """ Like `dict.get`. Raises `KeyError` for missing keys if no
@@ -110,7 +162,8 @@ class SettingsBase(UserDict, object):
                     type(data).__name__,
                 )
             )
-        self.data = self.load_hook(data)
+        # Replace existing values from __init__, add new ones.
+        self.data.update(self.load_hook(data))
 
     def load_hook(self, data):
         """ Called on self.data after JSON decoding, before setting
@@ -141,7 +194,7 @@ class SettingsBase(UserDict, object):
         if not self.filename:
             raise ValueError('`filename` must be set.')
 
-        with open(self.filename, 'w') as f:
+        with BackedUpWriter(self.filename) as f:
             module.dump(self.save_hook(self.data), f, **kwargs)
 
     def save_hook(self, data):
@@ -169,7 +222,67 @@ class SettingsBase(UserDict, object):
         """
         self.data[option] = value
 
+    def set_defaults(self, default_config):
+        """ Save a copy of keys/value-types from `default_config` to optionally
+            enforce config keys and value types later.
+        """
+        self.defaults = {
+            k: type(v)
+            for k, v in default_config.items()
+        }
+
     def setsave(self, option, value, filename=None, **kwargs):
         """ The same as calling .set() and then .save(**kwargs). """
         self.set(option, value)
         self.save(filename=filename, **kwargs)
+
+
+class BackedUpWriter(object):
+    """ A context manager that backs up files when opening in write mode,
+        and deletes the backup if no errors occurred while the file was open.
+        If errors do occur, the backup is restored.
+
+        If the file does not exist yet, no backup is made, but the file is
+        deleted if errors occur.
+    """
+    def __init__(self, filename, fmt='{}~'):
+        self.filename = filename
+        self.fmt = fmt or '{}~'
+        self.file = None
+        self.filename_backup = None
+
+    def __enter__(self):
+        backupfile = self.fmt.format(self.filename)
+        try:
+            shutil.copy2(self.filename, backupfile)
+        except FileNotFoundError:
+            # The file doesn't exist yet.
+            pass
+        else:
+            # Backup created.
+            self.filename_backup = backupfile
+        self.file = open(self.filename, 'w')
+        return self.file
+
+    def __exit__(self, typ, val, trace):
+        try:
+            self.file.close()
+        except Exception:
+            pass
+        if self.filename_backup:
+            # Backup was created.
+            if val is None:
+                # No errors, remove the backup.
+                os.remove(self.filename_backup)
+            else:
+                # Errors occurred, restore the backup.
+                shutil.move(self.filename_backup, self.filename)
+        else:
+            # No backup was created.
+            if val is not None:
+                # Errors occurred.
+                try:
+                    os.remove(self.filename)
+                except FileNotFoundError:
+                    # Never was created in the first place.
+                    pass

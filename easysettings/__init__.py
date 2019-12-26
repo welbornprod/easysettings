@@ -19,6 +19,7 @@ from .easy_settings import (  # noqa
     esCompareError,
     esSaveError,
     esValueError,
+    ISO8601,
 )
 from .json_settings import (
     JSONSettings,

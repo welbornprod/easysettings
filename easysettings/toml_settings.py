@@ -4,6 +4,7 @@
 """ toml_settings.py
 
     ...Simple TOML settings class.
+    * Must have the `toml` package installed (from pip). Not `pytoml`!.
     Christopher Welborn 05-07-19
 """
 try:
@@ -14,12 +15,8 @@ except ImportError:
 
 from .common_base import (
     SettingsBase,
+    load_settings,
 )
-try:
-    from .common_base import FileNotFoundError
-except ImportError:
-    # Python 3, don't need to import this name.
-    pass
 
 __all__ = ['TOMLSettings', 'load_toml_settings']
 
@@ -51,14 +48,12 @@ def load_toml_settings(
         The `default` is merged into existing config, for keys that don't exist
         already.
     """
-    try:
-        config = (cls or TOMLSettings).from_file(filename, _dict=_dict)
-    except FileNotFoundError:
-        config = TOMLSettings(filename=filename, _dict=_dict)
-    # Set any defaults passed in, if not already set.
-    for k in (default or {}):
-        config.setdefault(k, default[k])
-    return config
+    return load_settings(
+        cls or TOMLSettings,
+        filename,
+        default=default,
+        _dict=_dict,
+    )
 
 
 class TOMLSettings(SettingsBase):

@@ -13,13 +13,9 @@ except ImportError:
     yaml = None
 
 from .common_base import (
+    load_settings,
     SettingsBase,
 )
-try:
-    from .common_base import FileNotFoundError
-except ImportError:
-    # Python 3, don't need to import this name.
-    pass
 
 __all__ = ['YAMLSettings', 'load_yaml_settings']
 
@@ -43,14 +39,7 @@ def load_yaml_settings(filename, default=None, cls=None):
         The `default` is merged into existing config, for keys that don't exist
         already.
     """
-    try:
-        config = (cls or YAMLSettings).from_file(filename)
-    except FileNotFoundError:
-        config = YAMLSettings(filename=filename)
-    # Set any defaults passed in, if not already set.
-    for k in (default or {}):
-        config.setdefault(k, default[k])
-    return config
+    return load_settings(cls or YAMLSettings, filename, default=default)
 
 
 class YAMLSettings(SettingsBase):

@@ -83,9 +83,10 @@ function print_usage {
 
     Usage:
         $appscript -h | -v
-        $appscript (-a | -2 | -3) [-n | -u]
+        $appscript (-a | -2 | -3) [-n | -u] [ARGS...]
 
     Options:
+        ARGS           : Arguments for test runner.
         -a,--all       : Run for all pythonX.Y executables.
         -2,--python2   : Run for python 2 only.
         -3,--python3   : Run for python 3 only.

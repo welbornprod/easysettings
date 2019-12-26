@@ -1,3 +1,4 @@
+v3.2.1 12/25/19 -- Basic support for date/datetime objects.
 v3.2.0 05/08/19 -- TOMLSettings, YAMLSettings, and refactors.
 v3.0.0 05/05/19 -- Custom JSONEncoder/Decoders, and hooking items before saving or after loading.
 v2.2.0 04/16/19 -- Raise KeyError on missing options in JSONSettings.get().
