@@ -4,6 +4,7 @@
 """ toml_settings.py
 
     ...Simple TOML settings class.
+    * Must have the `toml` package installed (from pip). Not `pytoml`!.
     Christopher Welborn 05-07-19
 """
 try:

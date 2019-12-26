@@ -3,9 +3,10 @@ import os
 import re
 import sys
 import pickle
+from datetime import date, datetime
 
 # easy settings version
-__version__ = '3.2.0'
+__version__ = '3.2.1'
 
 # Python 3 compatibility flag
 # ...we need this because pickle likes to use bytes in python 3, and strings
@@ -19,6 +20,8 @@ if sys.version_info.major > 2:
     long = int
 else:
     PYTHON3 = False
+# Safe ISO 8601 format for dates/datetimes.
+ISO8601 = '%Y-%m-%dT%H:%M:%SZ'
 
 
 class __NoValue(object):
@@ -624,6 +627,14 @@ class EasySettings(object):
                 except Exception:
                     # normal string value
                     val = sval.rstrip()
+                    try:
+                        dateval = datetime.strptime(val, ISO8601)
+                    except ValueError:
+                        # Not a datetime.
+                        pass
+                    else:
+                        val = dateval
+
                 # Valid setting.
                 tmp_dict[sopt] = val
             # success (filled dict)
@@ -660,6 +671,8 @@ class EasySettings(object):
                     val = self.settings[skey]
                     if isinstance(val, str):
                         sval = val.replace('\n', '(es_nl)')
+                    elif isinstance(val, (date, datetime)):
+                        sval = val.strftime(ISO8601)
                     else:
                         sval = safe_pickle_str(val).replace('\n', '(es_nl)')
                     fwrite.write(skey + '=' + sval + '\n')
