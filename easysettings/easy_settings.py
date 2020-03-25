@@ -6,7 +6,7 @@ import pickle
 from datetime import date, datetime
 
 # easy settings version
-__version__ = '3.3.0'
+__version__ = '3.3.1'
 
 # Python 3 compatibility flag
 # ...we need this because pickle likes to use bytes in python 3, and strings
