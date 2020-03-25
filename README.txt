@@ -25,6 +25,13 @@ to use a standard format, such as:
 Bug Fixes
 ---------
 
+-  Version 3.2.1:
+
+Added basic support for ``date``/``datetime`` objects in the
+``EasySettings`` class. This does not include timezone support. For
+advanced date serialization, you will need to serialize the date
+*before* saving the setting.
+
 -  Version 3.2.0:
 
 New config formats were added, like ``JSONSettings`` you can now use

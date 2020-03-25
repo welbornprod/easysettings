@@ -36,7 +36,7 @@ NotSet = _NotSet()
 def load_settings(cls, filename, default=None, **kwargs):
     """ Tries to create a `cls` instance from a filename, but returns a new
         `cls` instance if the file does not exist.
-         This handles common logic for all SettingsBase subclasses.
+        This handles common logic for all SettingsBase subclasses.
 
         This is a convenience function for the common try/catch block used
         when `cls` is used for the first time.
@@ -52,6 +52,8 @@ def load_settings(cls, filename, default=None, **kwargs):
 
         The `default` is merged into existing config, for keys that don't exist
         already.
+
+        Returns an instantiated class that can be used for config.
 
         Arguments:
             cls       : The class instance to create.

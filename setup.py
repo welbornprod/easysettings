@@ -28,7 +28,7 @@ else:
 
 setup(
     name='EasySettings',
-    version='3.2.1',
+    version='3.3.0',
     author='Christopher Welborn',
     author_email='cj@welbornprod.com',
     packages=['easysettings'],
@@ -49,5 +49,9 @@ setup(
         'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules'
+    ],
+    install_requires=[
+        'pyyaml >= 3.12',
+        'toml >= 0.10.0',
     ],
 )

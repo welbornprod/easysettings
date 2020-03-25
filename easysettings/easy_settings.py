@@ -6,7 +6,7 @@ import pickle
 from datetime import date, datetime
 
 # easy settings version
-__version__ = '3.2.1'
+__version__ = '3.3.0'
 
 # Python 3 compatibility flag
 # ...we need this because pickle likes to use bytes in python 3, and strings
@@ -53,34 +53,34 @@ class EasySettings(object):
           configfile = configuration file to use
           settings   = dict object where settings are stored.
                        settings are retrieved like this:
-                         myname = settings.settings["username"]
+                         myname = settings.settings['username']
                          or:
-                         myname = settings.get("username")
+                         myname = settings.get('username')
                        settings are set like this:
-                         settings.settings["username"] = "cjwelborn"
+                         settings.settings['username'] = 'cjwelborn'
                          or:
-                         settings.set("username", "cjwelborn")
+                         settings.set('username', 'cjwelborn')
           name       = name for current project (for config file header)
           version    = version for current project (for config file header)
           header     = extra description text (for config file header)
 
         Example use:
             import easysettings
-            settings = easysettings.EasySettings("myconfigfile.conf")
-            settings.name = "My Project"
-            settings.version = "1.0"
+            settings = easysettings.EasySettings('myconfigfile.conf')
+            settings.name = 'My Project'
+            settings.version = '1.0'
             # name & version are optional, they are only used in creating
             # a config file with '# configuration for My Project 1.0' as
             # the first line. if they are None, that line says
             # '# configuration'.
 
-            settings.set("username", "cjwelborn")
+            settings.set('username', 'cjwelborn')
 
             # settings can be retrieved without saving to disk first...
-            s_user = settings.get("username")
+            s_user = settings.get('username')
 
             # settings can be saved to disk while setting an option
-            settings.setsave("installdir", "/usr/share/easysettings")
+            settings.setsave('installdir', '/usr/share/easysettings')
     """
     # Pattern for detecting app name and version on config load.
     # Should stay consistent with the strings in self._build_header().
