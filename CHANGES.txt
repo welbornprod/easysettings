@@ -1,3 +1,4 @@
+v3.3.2 03/25/20 -- All an "all" extra requirement, to install everything.
 v3.3.1 03/25/20 -- Specify toml/yaml as extras, not requirements.
 v3.3.0 03/25/20 -- Add pyyaml/toml requirements.
 v3.2.1 12/25/19 -- Basic support for date/datetime objects.
