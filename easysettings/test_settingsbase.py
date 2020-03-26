@@ -13,8 +13,14 @@ import unittest
 import tempfile
 
 import json
-import toml
-import yaml
+try:
+    import toml
+except ImportError:
+    toml = None
+try:
+    import yaml
+except ImportError:
+    yaml = None
 
 from .common_base import (
     BackedUpWriter,
@@ -462,19 +468,19 @@ JSONSettingsTests = create_suite(
     bases=(JSONSettingsBaseTests, ),
 )
 
-TOMLSettingsTests = create_suite(
+TOMLSettingsTests = unittest.skipIf(toml is None, "toml is not available")(create_suite(
     toml,
     TOMLSettings,
     load_toml_settings,
     extension='.toml',
-)
+))
 
-YAMLSettingsTests = create_suite(
+YAMLSettingsTests = unittest.skipIf(yaml is None, "yaml is not available")(create_suite(
     yaml,
     YAMLSettings,
     load_yaml_settings,
     extension='.yaml',
-)
+))
 
 
 if __name__ == '__main__':
