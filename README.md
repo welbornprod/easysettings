@@ -22,6 +22,14 @@ config files.
 
 ## Bug Fixes
 
+* Version 3.3.2:
+
+Extra dependencies for `YAMLSettings`/`TOMLSettings` can be installed as extras
+by specifying them:
+```bash
+pip install --user "easysettings[all]"
+```
+
 * Version 3.2.1:
 
 Added basic support for `date`/`datetime` objects in the `EasySettings` class.
@@ -39,14 +47,6 @@ New config formats were added, like `JSONSettings` you can now use
 It should be possible to use `EasySettings` and `JSONSettings` without these
 new dependencies. They are only required if you want the new `*Settings`
 formats.
-
-* Version 3.0.0:
-
-Custom `JSONEncoder`/`JSONDecoder` classes can be used in `JSONSettings`, and
-settings/items can be hooked after decoding/loading or before encoding/saving.
-
-This allows you to modify the values in any way you see fit by subclassing.
-
 
 ## Examples
 
