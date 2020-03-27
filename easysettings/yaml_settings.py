@@ -72,21 +72,27 @@ class YAMLSettings(SettingsBase):
             Arguments:
                 filename  : File name to read.
 
-            All open() and json.load() exceptions are propagated.
+            All open() and yaml.load() exceptions are propagated.
         """
         settings = cls(filename=filename)
         settings.load()
         return settings
 
-    def load(self, filename=None):
+    def load(self, filename=None, **kwargs):
         """ Load this dict from a YAML file.
-            Raises the same errors as open() and json.load().
+            Raises the same errors as open() and yaml.load().
         """
-        super(YAMLSettings, self).load(yaml, filename=filename)
+        if kwargs.get('Loader', None) is None:
+            # Try using default/safe loader since the user didn't specify.
+            # Otherwise, you get a warning.
+            full_loader = getattr(yaml, 'FullLoader', None)
+            if full_loader is not None:
+                kwargs['Loader'] = full_loader
+        super(YAMLSettings, self).load(yaml, filename=filename, **kwargs)
 
     def save(self, filename=None):
         """ Save this dict to a YAML file.
-            Raises the same errors as open() and json.dump().
+            Raises the same errors as open() and yaml.dump().
         """
         super(YAMLSettings, self).save(yaml, filename=filename)
 

@@ -86,21 +86,21 @@ class TOMLSettings(SettingsBase):
             Arguments:
                 filename  : File name to read.
 
-            All open() and json.load() exceptions are propagated.
+            All open() and toml.load() exceptions are propagated.
         """
         settings = cls(filename=filename, _dict=_dict)
         settings.load()
         return settings
 
-    def load(self, filename=None):
+    def load(self, filename=None, **kwargs):
         """ Load this dict from a TOML file.
-            Raises the same errors as open() and json.load().
+            Raises the same errors as open() and toml.load().
         """
-        super(TOMLSettings, self).load(toml, _dict=self._dict)
+        super(TOMLSettings, self).load(toml, _dict=self._dict, **kwargs)
 
     def save(self, filename=None):
         """ Save this dict to a TOML file.
-            Raises the same errors as open() and json.dump().
+            Raises the same errors as open() and toml.dump().
         """
         super(TOMLSettings, self).save(toml, filename=filename)
 
