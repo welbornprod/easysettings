@@ -13,8 +13,14 @@ import unittest
 import tempfile
 
 import json
-import toml
-import yaml
+try:
+    import toml
+except ImportError:
+    toml = None
+try:
+    import yaml
+except ImportError:
+    yaml = None
 
 from .common_base import (
     BackedUpWriter,
@@ -31,6 +37,12 @@ from .yaml_settings import (
     load_yaml_settings,
     YAMLSettings,
 )
+
+try:
+    # For pathlib tests.
+    import pathlib
+except ImportError:
+    pathlib = None
 
 try:
     FileNotFoundError
@@ -224,6 +236,102 @@ class SettingsBaseTests(object):
                 nothooked['hook_test_1'],
             ),
         )
+
+    @unittest.skipUnless(pathlib is not None, 'No pathlib.Path.')
+    def test_load_path_obj(self):
+        """ loads pathlib.Path objects """
+        p = pathlib.Path(self.testfile)
+        settings = self.settings_cls.from_file(p)
+        self.assertEqual(
+            settings.filename,
+            self.testfile,
+            msg='Failed to load pathlib.Path in load_<lang>_settings..',
+        )
+        self.assertDictEqual(
+            self.rawdict, settings.data,
+            msg='Failed to load dict settings from pathlib.Path.'
+        )
+
+        # Test the load_<lang>_settings functions.
+        settings = self.load_func(p)
+        self.assertEqual(
+            settings.filename,
+            self.testfile,
+            msg='Failed to load pathlib.Path in load_<lang>_settings..',
+        )
+        self.assertDictEqual(
+            self.rawdict, settings.data,
+            msg='Failed to load dict settings from file.'
+        )
+
+    def test_load_preferred(self):
+        """ loads first available file """
+        files_set = (
+            (self.testfile, ),
+            ('NONEXISTENT_FILE', self.testfile),
+            ('NONEXISTENT_FILE', self.testfile, 'NOT_A_FILE'),
+            ('NONEXISTENT_FILE', 'NOT_A_FILE', self.testfile),
+        )
+        for files in files_set:
+            settings = self.settings_cls.from_file(files)
+            self.assertEqual(
+                settings.filename,
+                self.testfile,
+                msg='Failed to set preferred file.',
+            )
+            self.assertDictEqual(
+                self.rawdict, settings.data,
+                msg='Failed to load dict settings from file.'
+            )
+
+        # Test the load_<lang>_settings functions.
+        for file in files_set:
+            settings = self.load_func(file)
+            self.assertEqual(
+                settings.filename,
+                self.testfile,
+                msg='Failed to set preferred file in load_<lang>_settings..',
+            )
+            self.assertDictEqual(
+                self.rawdict, settings.data,
+                msg='Failed to load dict settings from file.'
+            )
+
+    @unittest.skipUnless(pathlib is not None, 'no pathlib.Path.')
+    def test_load_preferred_path(self):
+        """ loads first available pathlib.Path """
+        files_set = (
+            (self.testfile, ),
+            ('NONEXISTENT_FILE', self.testfile),
+            ('NONEXISTENT_FILE', self.testfile, 'NOT_A_FILE'),
+            ('NONEXISTENT_FILE', 'NOT_A_FILE', self.testfile),
+        )
+        for files in files_set:
+            files = (pathlib.Path(s) for s in files)
+            settings = self.settings_cls.from_file(files)
+            self.assertEqual(
+                settings.filename,
+                self.testfile,
+                msg='Failed to set preferred file.',
+            )
+            self.assertDictEqual(
+                self.rawdict, settings.data,
+                msg='Failed to load dict settings from file.'
+            )
+
+        # Test the load_<lang>_settings functions.
+        for files in files_set:
+            files = (pathlib.Path(s) for s in files)
+            settings = self.load_func(files)
+            self.assertEqual(
+                settings.filename,
+                self.testfile,
+                msg='Failed to set preferred file in load_<lang>_settings..',
+            )
+            self.assertDictEqual(
+                self.rawdict, settings.data,
+                msg='Failed to load dict settings from file.'
+            )
 
     def test_load_save(self):
         """ loads and saves files """
@@ -462,19 +570,25 @@ JSONSettingsTests = create_suite(
     bases=(JSONSettingsBaseTests, ),
 )
 
-TOMLSettingsTests = create_suite(
+TOMLSettingsTests = unittest.skipIf(
+    toml is None,
+    "toml is not available"
+)(create_suite(
     toml,
     TOMLSettings,
     load_toml_settings,
     extension='.toml',
-)
+))
 
-YAMLSettingsTests = create_suite(
+YAMLSettingsTests = unittest.skipIf(
+    yaml is None,
+    "yaml is not available"
+)(create_suite(
     yaml,
     YAMLSettings,
     load_yaml_settings,
     extension='.yaml',
-)
+))
 
 
 if __name__ == '__main__':

@@ -20,7 +20,7 @@ from .common_base import (
 __all__ = ['YAMLSettings', 'load_yaml_settings']
 
 
-def load_yaml_settings(filename, default=None, cls=None):
+def load_yaml_settings(filename, default=None, cls=None, **kwargs):
     """ Tries to create a YAMLSettings from a filename, but returns a new
         YAMLSettings instance if the file does not exist.
 
@@ -39,7 +39,12 @@ def load_yaml_settings(filename, default=None, cls=None):
         The `default` is merged into existing config, for keys that don't exist
         already.
     """
-    return load_settings(cls or YAMLSettings, filename, default=default)
+    return load_settings(
+        cls or YAMLSettings,
+        filename,
+        default=default,
+        **kwargs
+    )
 
 
 class YAMLSettings(SettingsBase):
@@ -67,26 +72,32 @@ class YAMLSettings(SettingsBase):
         self._dict = _dict
 
     @classmethod
-    def from_file(cls, filename):
+    def from_file(cls, filename, **kwargs):
         """ Return a new YAMLSettings from a YAML file.
             Arguments:
                 filename  : File name to read.
 
-            All open() and json.load() exceptions are propagated.
+            All open() and yaml.load() exceptions are propagated.
         """
         settings = cls(filename=filename)
-        settings.load()
+        settings.load(**kwargs)
         return settings
 
-    def load(self, filename=None):
+    def load(self, filename=None, **kwargs):
         """ Load this dict from a YAML file.
-            Raises the same errors as open() and json.load().
+            Raises the same errors as open() and yaml.load().
         """
-        super(YAMLSettings, self).load(yaml, filename=filename)
+        if kwargs.get('Loader', None) is None:
+            # Try using default/safe loader since the user didn't specify.
+            # Otherwise, you get a warning.
+            full_loader = getattr(yaml, 'FullLoader', None)
+            if full_loader is not None:
+                kwargs['Loader'] = full_loader
+        super(YAMLSettings, self).load(yaml, filename=filename, **kwargs)
 
     def save(self, filename=None):
         """ Save this dict to a YAML file.
-            Raises the same errors as open() and json.dump().
+            Raises the same errors as open() and yaml.dump().
         """
         super(YAMLSettings, self).save(yaml, filename=filename)
 

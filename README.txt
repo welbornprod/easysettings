@@ -25,29 +25,35 @@ to use a standard format, such as:
 Bug Fixes
 ---------
 
--  Version 3.2.0:
+-  Version 3.3.3:
 
-New config formats were added, like ``JSONSettings`` you can now use
-``TOMLSettings`` (through the ``toml`` package) and ``YAMLSettings``
-(through the ``pyyaml`` package).
+Extra ``kwargs`` can be passed to the ``load()``/``from_file()`` methods
+on ``YAMLSettings`` and ``TOMLSettings``. You have to use
+``load_kwargs=kwargs`` when instantiating the class directly. It will
+forward the ``kwargs`` to the loader later in this case. This allows a
+``Loader`` to be specified when using the ``yaml`` settings, and
+future-proofs EasySettings.
 
-It should be possible to use ``EasySettings`` and ``JSONSettings``
-without these new dependencies. They are only required if you want the
-new ``*Settings`` formats.
+-  Version 3.3.2:
 
--  Version 3.0.0:
+Extra dependencies for ``YAMLSettings``/``TOMLSettings`` can be
+installed as extras by specifying them:
 
-Custom ``JSONEncoder``/``JSONDecoder`` classes can be used in
-``JSONSettings``, and settings/items can be hooked after
-decoding/loading or before encoding/saving.
+.. code:: bash
 
-This allows you to modify the values in any way you see fit by
-subclassing.
+    pip install --user "easysettings[all]"
+
+-  Version 3.2.1:
+
+Added basic support for ``date``/``datetime`` objects in the
+``EasySettings`` class. This does not include timezone support. For
+advanced date serialization, you will need to serialize the date
+*before* saving the setting.
 
 Examples
 --------
 
-Example of Easy Settings basic usage:
+Example of EasySettings basic usage:
 
 .. code:: python
 
@@ -134,7 +140,7 @@ Comparison:
 Features
 --------
 
-Easy Settings has the basic features you would expect out of a settings
+EasySettings has the basic features you would expect out of a settings
 module, and it's very easy to use. If your project needs to save simple
 settings without the overhead and complication of other modules then
 this is for you. Save, load, set, & get are very easy to grasp. The more
@@ -142,8 +148,8 @@ advanced features are there for you to use, but don't get in the way.
 Settings, options, & values can be listed, searched, detected, removed,
 & cleared.
 
-Easy Settings uses a dictionary to store settings before writing to
-disk, so you can also access settings like a dictionary object using
+EasySettings uses a dictionary to store settings before writing to disk,
+so you can also access settings like a dictionary object using
 ``easysettings.settings``. The ``setsave()`` function will save every
 time you set an option, and ``is_saved()`` will tell you whether or not
 the file has been saved to disk yet. Code is documented for a newbie, so
@@ -259,7 +265,10 @@ JSONSettings, TOMLSettings, and YAMLSettings:
 
 All of the ``*Settings`` objects are simple ``UserDict``\ s that allow
 loading and saving in the specified format. All keys and values must be
-serializable using the specified format.
+serializable using the specified format. If you don't already have the
+``pyyaml`` and ``toml`` packages (not ``pytoml``), be sure to use
+``pip install "easysettings[all]"`` to install those along with
+EasySettings.
 
 JSONSettings Example:
 ---------------------
@@ -293,7 +302,7 @@ TOMLSettings Example:
 
 .. code:: python
 
-    # `toml` must be installed, though you don't have to import it.
+    # `toml` (not `pytoml`) must be installed, though you don't have to import it.
     import toml
 
     from easysettings import TOMLSettings
@@ -305,6 +314,7 @@ TOMLSettings Example:
 
 .. code:: python
 
+    # `toml` (not `pytoml`) must be installed, though you don't have to import it.
     from easysettings import TOMLSettings, load_toml_settings
 
     # Loading settings that may not exist yet:
@@ -323,7 +333,6 @@ YAMLSettings Example:
 .. code:: python
 
     # `pyyaml` must be installed, though you don't have to import it.
-    import yaml
     from easysettings import YAMLSettings
 
     # Starting from scratch:
@@ -333,6 +342,7 @@ YAMLSettings Example:
 
 .. code:: python
 
+    # `pyyaml` must be installed, though you don't have to import it.
     from easysettings import YAMLSettings, load_yaml_settings
 
     # Loading settings that may not exist yet:
@@ -350,18 +360,37 @@ PyPi Package
 
 Full PyPi package available at: http://pypi.python.org/pypi/EasySettings
 
-Use pip to install Easy Settings to be used globally. Ubuntu
-instructions to install pip:
+Use pip to install EasySettings to be used globally. Ubuntu instructions
+to install pip:
 
 .. code:: bash
 
     sudo apt-get install python-pip
 
-After that you should be able to install Easy Settings by typing:
+After that you should be able to install EasySettings by typing:
 
 .. code:: bash
 
-    sudo pip install easysettings
+    pip install --user easysettings
+
+Extras
+------
+
+If you would like to use the opt-in YAML and TOML features, you will
+need the ``pyyaml`` and ``toml`` packages (not pytoml). These can be
+requested individually, or together during the EasySettings
+installation:
+
+.. code:: bash
+
+    # Install with the yaml dependency to use YAMLSettings:
+    pip install --user "easysettings[yaml]"
+
+    # Install with the toml dependency to use TOMLSettings:
+    pip install --user "easysettings[toml]"
+
+    # Install with both dependencies to use YAMLSettings and TOMLSettings:
+    pip install --user "easysettings[all]"
 
 Source Code
 ===========
@@ -380,15 +409,49 @@ Notes
 
 Since you've scrolled all the way down here, I thought I would tell you
 that the ``EasySettings`` class itself was created a long time ago, when
-I was still learning Python. I don't use that specific class anymore. I
-prefer to use the other ``*Settings`` classes in the ``easysettings``
-package. I've been fixing bugs and adding features in all of the
-``easysettings`` code for years now, so I don't want to say that it's
-"abandoned" or "deprecated". It was designed for me at the time, a
-beginner, so maybe it's still useful for beginners, but the other
-classes are much cleaner and not so opinionated. They're also widely
-accepted config formats, where the ``EasySettings`` format (a mix of
-custom ``INI`` and Python's ``pickle``) is not. They raise exceptions
-instead of silently trying to "do the right thing".
+I was still learning Python. I don't use that specific class anymore for
+new projects. I prefer to use the other ``*Settings`` classes in the
+``easysettings`` package. I've been fixing bugs and adding features in
+all of the ``easysettings`` code for years now, so I don't want to say
+that it's "abandoned" or "deprecated". I'm still using it with some of
+my projects because there is no real reason to change them.
 
-It's better to be explicit than implicit.
+It was designed for me at the time (a beginner), so maybe it's still
+useful for beginners, but the other classes are much cleaner and not so
+"opinionated". They're also widely accepted config formats, where the
+``EasySettings`` format (a mix of custom ``INI`` and Python's
+``pickle``) is not. They raise exceptions instead of silently trying to
+"do the right thing". If you only ever save string values,
+``EasySettings`` is nice because it looks like an ``INI`` file with
+helpers for values like ``"true"``, ``"false"``, ``"yes"``, ``"no"``,
+``"1"``, and ``"0"`` (if you use ``get_bool()``).
+
+If you start saving other types, you may want to switch to
+``JSONSettings``, ``TOMLSettings``, or ``YAMLSettings`` (depending on
+what your flavor is).
+
+**It's better to be explicit than implicit.**
+
+This is much cleaner:
+
+.. code:: python
+
+    from easysettings import load_json_settings
+
+    config = load_json_settings(
+        # File is created if needed.
+        'myconfig.json',
+        # config will have *at least* these keys/values.
+        default={'key1': 'value', 'key2': 2600},
+    )
+    # It's just a dict.
+    config['key3'] = config.get('key3', [1, 2, 3])
+
+    # Next time this code runs you can start where you left off.
+    config.save()
+
+Thank you for taking the time to read this. Contributions are welcome in
+all forms. `File an
+issue <https://github.com/welbornprod/easysettings/issues>`__, or create
+a `Pull Request <https://github.com/welbornprod/easysettings/pulls>`__
+if you would like to see a new feature in EasySettings.

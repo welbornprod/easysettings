@@ -22,6 +22,11 @@ from . import (
     ISO8601,
 )
 
+try:
+    # For pathlib tests.
+    import pathlib
+except ImportError:
+    pathlib = None
 
 if sys.version_info.major < 3:
     FileNotFoundError = IOError
@@ -288,6 +293,51 @@ class EasySettingsTests(unittest.TestCase):
             [('option3', 'value3')],
             msg='Search query failed for list_settings(\'3\')'
         )
+
+    @unittest.skipUnless(pathlib is not None, 'No pathlib.Path.')
+    def test_load_path_obj(self):
+        """ loads pathlib.Path objects """
+        p = pathlib.Path(self.testfile)
+        settings = EasySettings.from_file(p)
+        self.assertEqual(
+            settings.configfile,
+            str(p),
+            msg='Failed to set filename from a pathlib.Path.'
+        )
+
+    def test_load_preferred(self):
+        """ loads first available file """
+        files_set = (
+            (self.testfile, ),
+            ('NONEXISTENT_FILE', self.testfile),
+            ('NONEXISTENT_FILE', self.testfile, 'NOT_A_FILE'),
+            ('NONEXISTENT_FILE', 'NOT_A_FILE', self.testfile),
+        )
+        for files in files_set:
+            settings = EasySettings.from_file(files)
+            self.assertEqual(
+                settings.configfile,
+                self.testfile,
+                msg='Failed to set preferred file.',
+            )
+
+    @unittest.skipUnless(pathlib is not None, 'no pathlib.Path')
+    def test_load_preferred_path(self):
+        """ loads first available pathlib.Path """
+        files_set = (
+            (self.testfile, ),
+            ('NONEXISTENT_FILE', self.testfile),
+            ('NONEXISTENT_FILE', self.testfile, 'NOT_A_FILE'),
+            ('NONEXISTENT_FILE', 'NOT_A_FILE', self.testfile),
+        )
+        for files in files_set:
+            files = (pathlib.Path(s) for s in files)
+            settings = EasySettings.from_file(files)
+            self.assertEqual(
+                settings.configfile,
+                self.testfile,
+                msg='Failed to set preferred file.',
+            )
 
     def test_load_save(self):
         """ EasySettings loads and saves valid config files """

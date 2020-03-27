@@ -12,6 +12,13 @@ try:
 except ImportError:
     # Python 2..
     from UserDict import UserDict
+try:
+    # Loading a config file from a Path will work.
+    import pathlib
+except ImportError:
+    # Paths are not even considered.
+    pathlib = None
+
 
 try:
     FileNotFoundError
@@ -33,10 +40,39 @@ class _NotSet(object):
 NotSet = _NotSet()
 
 
+def preferred_file(filenames):
+    """ Returns the first existing file name. If a `str` is given, only it
+        will be tried.
+        If none of the files exist, the first one is returned.
+    """
+    if not filenames:
+        # The only accepted "falsey" value is None.
+        return None
+
+    if isinstance(filenames, str):
+        # Whether it exists or not, we're going to use it.
+        return filenames
+    try:
+        for obj in filenames:
+            # Might be a Path.
+            filename = str(obj)
+            if os.path.exists(filename):
+                return filename
+        return str(filenames[0])
+    except TypeError:
+        # Not an iterable, is it a Path?
+        if (pathlib is not None) and isinstance(filenames, pathlib.Path):
+            return str(filenames)
+        # Not a string, iterable, or Path.
+        typename = type(filenames).__name__
+        expected = 'str, iterable, or pathlib.Path'
+        raise TypeError('Expected {}, got: {}'.format(expected, typename))
+
+
 def load_settings(cls, filename, default=None, **kwargs):
     """ Tries to create a `cls` instance from a filename, but returns a new
         `cls` instance if the file does not exist.
-         This handles common logic for all SettingsBase subclasses.
+        This handles common logic for all SettingsBase subclasses.
 
         This is a convenience function for the common try/catch block used
         when `cls` is used for the first time.
@@ -53,6 +89,8 @@ def load_settings(cls, filename, default=None, **kwargs):
         The `default` is merged into existing config, for keys that don't exist
         already.
 
+        Returns an instantiated class that can be used for config.
+
         Arguments:
             cls       : The class instance to create.
             filename  : File path to load, or try to load.
@@ -60,26 +98,30 @@ def load_settings(cls, filename, default=None, **kwargs):
                         Keys from an existing config file are merged into
                         this default dict.
             **kwargs  : Extra arguments for the class's `.from_file()` method,
-                        and `cls.__init__()` (whichever is used).
+                        and `.load()` (when it is used later).
     """
     defaults = default or {}
+    filename = preferred_file(filename)
+
     try:
         # Existing file?
         config = cls.from_file(filename, **kwargs)
         # Set any defaults passed in, if not already set.
+        # load_hook is used so that subclasses keep their custom behavior.
         for k, v in config.load_hook(defaults).items():
             config.setdefault(k, v)
         config.set_defaults(defaults)
     except FileNotFoundError:
         # New config, no file yet.
-        config = cls(defaults, filename=filename, **kwargs)
+        config = cls(defaults, filename=filename, load_kwargs=kwargs)
     return config
 
 
 # Explicitly inheriting from `object` for Python 2.7. Not an old-style class.
 class SettingsBase(UserDict, object):
     """ Base class for all *Settings classes. Holds shared methods. """
-    def __init__(self, iterable=None, filename=None, **kwargs):
+    def __init__(
+            self, iterable=None, filename=None, load_kwargs=None, **kwargs):
         """ Initialize a SettingsBase instance like a `dict`, with optional
             `filename` argument (must be set before `save()` or `load()`,
             but can be set with those methods at the time).
@@ -87,12 +129,16 @@ class SettingsBase(UserDict, object):
         if iterable:
             self.data = dict(iterable)
         elif kwargs:
+            # dict() behaves like this.
             self.data = self.load_hook({k: v for k, v in kwargs.items()})
         else:
             self.data = {}
-        self.filename = filename or None
+        self.filename = preferred_file(filename or None)
         self.defaults = {}
         self.set_defaults(self.data)
+
+        # These will be used in .load() (through .from_file() also).
+        self.load_kwargs = load_kwargs or {}
 
     def __bool__(self):
         return bool(self.data)
@@ -125,7 +171,7 @@ class SettingsBase(UserDict, object):
         object.__setattr__(self, key, value)
 
     @classmethod
-    def from_file(cls, filename):
+    def from_file(cls, filename, **kwargs):
         raise NotImplementedError('SettingsBase should not be used directly.')
 
     def get(self, option, default=NotSet):
@@ -149,8 +195,10 @@ class SettingsBase(UserDict, object):
         if not self.filename:
             raise ValueError('`filename` must be set.')
 
+        extra_args = self.load_kwargs
+        extra_args.update(kwargs)
         with open(self.filename, 'r') as f:
-            data = module.load(f, **kwargs)
+            data = module.load(f, **extra_args)
 
         if data is None:
             # Null/Empty.
