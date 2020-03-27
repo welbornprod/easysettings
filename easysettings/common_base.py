@@ -98,7 +98,7 @@ def load_settings(cls, filename, default=None, **kwargs):
                         Keys from an existing config file are merged into
                         this default dict.
             **kwargs  : Extra arguments for the class's `.from_file()` method,
-                        and `cls.__init__()` (whichever is used).
+                        and `.load()` (when it is used later).
     """
     defaults = default or {}
     filename = preferred_file(filename)
@@ -113,14 +113,15 @@ def load_settings(cls, filename, default=None, **kwargs):
         config.set_defaults(defaults)
     except FileNotFoundError:
         # New config, no file yet.
-        config = cls(defaults, filename=filename, **kwargs)
+        config = cls(defaults, filename=filename, load_kwargs=kwargs)
     return config
 
 
 # Explicitly inheriting from `object` for Python 2.7. Not an old-style class.
 class SettingsBase(UserDict, object):
     """ Base class for all *Settings classes. Holds shared methods. """
-    def __init__(self, iterable=None, filename=None, **kwargs):
+    def __init__(
+            self, iterable=None, filename=None, load_kwargs=None, **kwargs):
         """ Initialize a SettingsBase instance like a `dict`, with optional
             `filename` argument (must be set before `save()` or `load()`,
             but can be set with those methods at the time).
@@ -128,12 +129,16 @@ class SettingsBase(UserDict, object):
         if iterable:
             self.data = dict(iterable)
         elif kwargs:
+            # dict() behaves like this.
             self.data = self.load_hook({k: v for k, v in kwargs.items()})
         else:
             self.data = {}
         self.filename = preferred_file(filename or None)
         self.defaults = {}
         self.set_defaults(self.data)
+
+        # These will be used in .load() (through .from_file() also).
+        self.load_kwargs = load_kwargs or {}
 
     def __bool__(self):
         return bool(self.data)
@@ -166,7 +171,7 @@ class SettingsBase(UserDict, object):
         object.__setattr__(self, key, value)
 
     @classmethod
-    def from_file(cls, filename):
+    def from_file(cls, filename, **kwargs):
         raise NotImplementedError('SettingsBase should not be used directly.')
 
     def get(self, option, default=NotSet):
@@ -190,8 +195,10 @@ class SettingsBase(UserDict, object):
         if not self.filename:
             raise ValueError('`filename` must be set.')
 
+        extra_args = self.load_kwargs
+        extra_args.update(kwargs)
         with open(self.filename, 'r') as f:
-            data = module.load(f, **kwargs)
+            data = module.load(f, **extra_args)
 
         if data is None:
             # Null/Empty.

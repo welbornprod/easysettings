@@ -333,7 +333,6 @@ class SettingsBaseTests(object):
                 msg='Failed to load dict settings from file.'
             )
 
-
     def test_load_save(self):
         """ loads and saves files """
         settings = self.settings_cls.from_file(self.testfile)

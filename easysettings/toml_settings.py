@@ -29,7 +29,8 @@ def default_translate(strtype, strvalue, value):
 def load_toml_settings(
         filename, default=None,
         _dict=dict,
-        cls=None):
+        cls=None,
+        **kwargs):
     """ Tries to create a TOMLSettings from a filename, but returns a new
         TOMLSettings instance if the file does not exist.
 
@@ -53,6 +54,7 @@ def load_toml_settings(
         filename,
         default=default,
         _dict=_dict,
+        **kwargs
     )
 
 
@@ -81,7 +83,7 @@ class TOMLSettings(SettingsBase):
         self._dict = _dict
 
     @classmethod
-    def from_file(cls, filename, _dict=dict):
+    def from_file(cls, filename, _dict=dict, **kwargs):
         """ Return a new TOMLSettings from a TOML file.
             Arguments:
                 filename  : File name to read.
@@ -89,7 +91,7 @@ class TOMLSettings(SettingsBase):
             All open() and toml.load() exceptions are propagated.
         """
         settings = cls(filename=filename, _dict=_dict)
-        settings.load()
+        settings.load(**kwargs)
         return settings
 
     def load(self, filename=None, **kwargs):

@@ -18,7 +18,10 @@ __all__ = ['JSONSettings', 'load_json_settings']
 
 
 def load_json_settings(
-        filename, default=None, encoder=None, decoder=None, cls=None):
+        filename, default=None,
+        encoder=None, decoder=None,
+        cls=None,
+        **kwargs):
     """ Tries to create a JSONSettings from a filename, but returns a new
         JSONSettings instance if the file does not exist.
 
@@ -43,6 +46,7 @@ def load_json_settings(
         default=default,
         encoder=encoder,
         decoder=decoder,
+        **kwargs
     )
 
 
@@ -67,7 +71,7 @@ class JSONSettings(SettingsBase):
         )
 
     @classmethod
-    def from_file(cls, filename, encoder=None, decoder=None):
+    def from_file(cls, filename, encoder=None, decoder=None, **kwargs):
         """ Return a new JSONSettings from a JSON file.
             Arguments:
                 filename  : File name to read.
@@ -75,14 +79,14 @@ class JSONSettings(SettingsBase):
             All open() and json.load() exceptions are propagated.
         """
         settings = cls(filename=filename, encoder=encoder, decoder=decoder)
-        settings.load()
+        settings.load(**kwargs)
         return settings
 
-    def load(self, filename=None):
+    def load(self, filename=None, **kwargs):
         """ Load this dict from a JSON file.
             Raises the same errors as open() and json.load().
         """
-        super(JSONSettings, self).load(json, cls=self.decoder)
+        super(JSONSettings, self).load(json, cls=self.decoder, **kwargs)
 
     def save(self, filename=None, sort_keys=False):
         """ Save this dict to a JSON file.

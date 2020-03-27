@@ -20,7 +20,7 @@ from .common_base import (
 __all__ = ['YAMLSettings', 'load_yaml_settings']
 
 
-def load_yaml_settings(filename, default=None, cls=None):
+def load_yaml_settings(filename, default=None, cls=None, **kwargs):
     """ Tries to create a YAMLSettings from a filename, but returns a new
         YAMLSettings instance if the file does not exist.
 
@@ -39,7 +39,12 @@ def load_yaml_settings(filename, default=None, cls=None):
         The `default` is merged into existing config, for keys that don't exist
         already.
     """
-    return load_settings(cls or YAMLSettings, filename, default=default)
+    return load_settings(
+        cls or YAMLSettings,
+        filename,
+        default=default,
+        **kwargs
+    )
 
 
 class YAMLSettings(SettingsBase):
@@ -67,7 +72,7 @@ class YAMLSettings(SettingsBase):
         self._dict = _dict
 
     @classmethod
-    def from_file(cls, filename):
+    def from_file(cls, filename, **kwargs):
         """ Return a new YAMLSettings from a YAML file.
             Arguments:
                 filename  : File name to read.
@@ -75,7 +80,7 @@ class YAMLSettings(SettingsBase):
             All open() and yaml.load() exceptions are propagated.
         """
         settings = cls(filename=filename)
-        settings.load()
+        settings.load(**kwargs)
         return settings
 
     def load(self, filename=None, **kwargs):
