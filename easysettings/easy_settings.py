@@ -5,8 +5,10 @@ import sys
 import pickle
 from datetime import date, datetime
 
+from .common_base import preferred_file
+
 # easy settings version
-__version__ = '3.3.2'
+__version__ = '3.3.3'
 
 # Python 3 compatibility flag
 # ...we need this because pickle likes to use bytes in python 3, and strings
@@ -130,7 +132,7 @@ class EasySettings(object):
             self.configfile = sconfigfile
         else:
             # if filename is passed, automatically check/create file
-            self.configfile = sconfigfile
+            self.configfile = preferred_file(sconfigfile)
             self.configfile_exists()
 
         # empty setting dictionary
@@ -358,6 +360,34 @@ class EasySettings(object):
     def es_version(self):
         """ returns module-level easysettings version string """
         return __version__
+
+    @property
+    def filename(self):
+        """ Returns self.configfile.
+            This make EasySettings like the other *Settings classes,
+            without breaking backward compatibility.
+        """
+        return self.configfile
+
+    @filename.setter
+    def filename(self, value):
+        """ Sets self.configfile.
+            This make EasySettings like the other *Settings classes,
+            without breaking backward compatibility.
+        """
+        self.configfile = value
+
+    @classmethod
+    def from_file(self, filename=None, name=None, version=None, header=None):
+        """ Just a wrapper around EasySettings.__init__() that makes this
+            like the other *Settings classes.
+        """
+        return EasySettings(
+            sconfigfile=filename,
+            name=name,
+            version=version,
+            header=header,
+        )
 
     def get(self, soption, default=''):
         """ retrieves a setting from config file
@@ -1002,7 +1032,7 @@ def str_(data):
     if PYTHON3:
         # Safer conversion from bytes to string for python 3.
         if isinstance(data, (bytes, bytearray)):
-            return str(data, 'utf-8')
+            return data.decode()
     return str(data)
 
 

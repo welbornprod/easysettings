@@ -10,6 +10,10 @@ Created on Jan 16, 2013
 @author: Christopher Welborn
 '''
 
+from .common_base import (
+    preferred_file,
+)
+
 from .easy_settings import (  # noqa
     EasySettings,
     __version__,
@@ -48,4 +52,5 @@ __all__ = [
     'load_json_settings',
     'load_toml_settings',
     'load_yaml_settings',
+    'preferred_file',
 ]

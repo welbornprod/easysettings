@@ -12,6 +12,13 @@ try:
 except ImportError:
     # Python 2..
     from UserDict import UserDict
+try:
+    # Loading a config file from a Path will work.
+    import pathlib
+except ImportError:
+    # Paths are not even considered.
+    pathlib = None
+
 
 try:
     FileNotFoundError
@@ -31,6 +38,35 @@ class _NotSet(object):
 
 # Singleton instance for identity comparison.
 NotSet = _NotSet()
+
+
+def preferred_file(filenames):
+    """ Returns the first existing file name. If a `str` is given, only it
+        will be tried.
+        If none of the files exist, the first one is returned.
+    """
+    if not filenames:
+        # The only accepted "falsey" value is None.
+        return None
+
+    if isinstance(filenames, str):
+        # Whether it exists or not, we're going to use it.
+        return filenames
+    try:
+        for obj in filenames:
+            # Might be a Path.
+            filename = str(obj)
+            if os.path.exists(filename):
+                return filename
+        return str(filenames[0])
+    except TypeError:
+        # Not an iterable, is it a Path?
+        if (pathlib is not None) and isinstance(filenames, pathlib.Path):
+            return str(filenames)
+        # Not a string, iterable, or Path.
+        typename = type(filenames).__name__
+        expected = 'str, iterable, or pathlib.Path'
+        raise TypeError('Expected {}, got: {}'.format(expected, typename))
 
 
 def load_settings(cls, filename, default=None, **kwargs):
@@ -65,10 +101,13 @@ def load_settings(cls, filename, default=None, **kwargs):
                         and `cls.__init__()` (whichever is used).
     """
     defaults = default or {}
+    filename = preferred_file(filename)
+
     try:
         # Existing file?
         config = cls.from_file(filename, **kwargs)
         # Set any defaults passed in, if not already set.
+        # load_hook is used so that subclasses keep their custom behavior.
         for k, v in config.load_hook(defaults).items():
             config.setdefault(k, v)
         config.set_defaults(defaults)
@@ -92,7 +131,7 @@ class SettingsBase(UserDict, object):
             self.data = self.load_hook({k: v for k, v in kwargs.items()})
         else:
             self.data = {}
-        self.filename = filename or None
+        self.filename = preferred_file(filename or None)
         self.defaults = {}
         self.set_defaults(self.data)
 

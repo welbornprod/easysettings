@@ -39,6 +39,12 @@ from .yaml_settings import (
 )
 
 try:
+    # For pathlib tests.
+    import pathlib
+except ImportError:
+    pathlib = None
+
+try:
     FileNotFoundError
 except NameError:
     # Python 2.7.
@@ -230,6 +236,66 @@ class SettingsBaseTests(object):
                 nothooked['hook_test_1'],
             ),
         )
+
+    @unittest.skipUnless(pathlib is not None, 'No pathlib.Path.')
+    def test_load_path_obj(self):
+        """ loads pathlib.Path objects """
+        p = pathlib.Path(self.testfile)
+        settings = self.settings_cls.from_file(p)
+        self.assertEqual(
+            settings.filename,
+            self.testfile,
+            msg='Failed to load pathlib.Path in load_<lang>_settings..',
+        )
+        self.assertDictEqual(
+            self.rawdict, settings.data,
+            msg='Failed to load dict settings from pathlib.Path.'
+        )
+
+        # Test the load_<lang>_settings functions.
+        settings = self.load_func(p)
+        self.assertEqual(
+            settings.filename,
+            self.testfile,
+            msg='Failed to load pathlib.Path in load_<lang>_settings..',
+        )
+        self.assertDictEqual(
+            self.rawdict, settings.data,
+            msg='Failed to load dict settings from file.'
+        )
+
+    def test_load_preferred(self):
+        """ loads first available file """
+        files_set = (
+            (self.testfile, ),
+            ('NONEXISTENT_FILE', self.testfile),
+            ('NONEXISTENT_FILE', self.testfile, 'NOT_A_FILE'),
+            ('NONEXISTENT_FILE', 'NOT_A_FILE', self.testfile),
+        )
+        for files in files_set:
+            settings = self.settings_cls.from_file(files)
+            self.assertEqual(
+                settings.filename,
+                self.testfile,
+                msg='Failed to set preferred file.',
+            )
+            self.assertDictEqual(
+                self.rawdict, settings.data,
+                msg='Failed to load dict settings from file.'
+            )
+
+        # Test the load_<lang>_settings functions.
+        for file in files_set:
+            settings = self.load_func(file)
+            self.assertEqual(
+                settings.filename,
+                self.testfile,
+                msg='Failed to set preferred file in load_<lang>_settings..',
+            )
+            self.assertDictEqual(
+                self.rawdict, settings.data,
+                msg='Failed to load dict settings from file.'
+            )
 
     def test_load_save(self):
         """ loads and saves files """
