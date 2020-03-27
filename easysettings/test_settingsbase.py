@@ -297,6 +297,43 @@ class SettingsBaseTests(object):
                 msg='Failed to load dict settings from file.'
             )
 
+    @unittest.skipUnless(pathlib is not None, 'no pathlib.Path.')
+    def test_load_preferred_path(self):
+        """ loads first available pathlib.Path """
+        files_set = (
+            (self.testfile, ),
+            ('NONEXISTENT_FILE', self.testfile),
+            ('NONEXISTENT_FILE', self.testfile, 'NOT_A_FILE'),
+            ('NONEXISTENT_FILE', 'NOT_A_FILE', self.testfile),
+        )
+        for files in files_set:
+            files = (pathlib.Path(s) for s in files)
+            settings = self.settings_cls.from_file(files)
+            self.assertEqual(
+                settings.filename,
+                self.testfile,
+                msg='Failed to set preferred file.',
+            )
+            self.assertDictEqual(
+                self.rawdict, settings.data,
+                msg='Failed to load dict settings from file.'
+            )
+
+        # Test the load_<lang>_settings functions.
+        for files in files_set:
+            files = (pathlib.Path(s) for s in files)
+            settings = self.load_func(files)
+            self.assertEqual(
+                settings.filename,
+                self.testfile,
+                msg='Failed to set preferred file in load_<lang>_settings..',
+            )
+            self.assertDictEqual(
+                self.rawdict, settings.data,
+                msg='Failed to load dict settings from file.'
+            )
+
+
     def test_load_save(self):
         """ loads and saves files """
         settings = self.settings_cls.from_file(self.testfile)
@@ -534,14 +571,20 @@ JSONSettingsTests = create_suite(
     bases=(JSONSettingsBaseTests, ),
 )
 
-TOMLSettingsTests = unittest.skipIf(toml is None, "toml is not available")(create_suite(
+TOMLSettingsTests = unittest.skipIf(
+    toml is None,
+    "toml is not available"
+)(create_suite(
     toml,
     TOMLSettings,
     load_toml_settings,
     extension='.toml',
 ))
 
-YAMLSettingsTests = unittest.skipIf(yaml is None, "yaml is not available")(create_suite(
+YAMLSettingsTests = unittest.skipIf(
+    yaml is None,
+    "yaml is not available"
+)(create_suite(
     yaml,
     YAMLSettings,
     load_yaml_settings,

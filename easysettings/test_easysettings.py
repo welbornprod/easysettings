@@ -321,6 +321,24 @@ class EasySettingsTests(unittest.TestCase):
                 msg='Failed to set preferred file.',
             )
 
+    @unittest.skipUnless(pathlib is not None, 'no pathlib.Path')
+    def test_load_preferred_path(self):
+        """ loads first available pathlib.Path """
+        files_set = (
+            (self.testfile, ),
+            ('NONEXISTENT_FILE', self.testfile),
+            ('NONEXISTENT_FILE', self.testfile, 'NOT_A_FILE'),
+            ('NONEXISTENT_FILE', 'NOT_A_FILE', self.testfile),
+        )
+        for files in files_set:
+            files = (pathlib.Path(s) for s in files)
+            settings = EasySettings.from_file(files)
+            self.assertEqual(
+                settings.configfile,
+                self.testfile,
+                msg='Failed to set preferred file.',
+            )
+
     def test_load_save(self):
         """ EasySettings loads and saves valid config files """
         settings = EasySettings(self.testfile)
