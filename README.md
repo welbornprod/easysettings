@@ -22,6 +22,14 @@ config files.
 
 ## Bug Fixes
 
+* Version 3.3.3:
+
+Extra `kwargs` can be passed to the `load()`/`from_file()` methods on `YAMLSettings` and
+`TOMLSettings`. You have to use `load_kwargs=kwargs` when instantiating the
+class directly. It will forward the `kwargs` to the loader later in this case.
+This allows a `Loader` to be specified when using the `yaml` settings, and
+future-proofs EasySettings.
+
 * Version 3.3.2:
 
 Extra dependencies for `YAMLSettings`/`TOMLSettings` can be installed as extras
@@ -37,16 +45,6 @@ This does not include timezone support.
 For advanced date serialization, you will need to serialize the date *before*
 saving the setting.
 
-
-* Version 3.2.0:
-
-New config formats were added, like `JSONSettings` you can now use
-`TOMLSettings` (through the `toml` package) and `YAMLSettings` (through the
-`pyyaml` package).
-
-It should be possible to use `EasySettings` and `JSONSettings` without these
-new dependencies. They are only required if you want the new `*Settings`
-formats.
 
 ## Examples
 
