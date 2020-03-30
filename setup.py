@@ -37,7 +37,7 @@ setup(
     description=open('DESC.txt').read(),
     long_description=longdesc,
     keywords=' '.join((
-        'python module library 2 3 settings easy',
+        'python module library 3 settings easy',
         'config setting configuration applications app',
         'json toml yaml pickle ini dict userdict',
     )),
@@ -45,11 +45,11 @@ setup(
         'Operating System :: Microsoft :: Windows',
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Topic :: Software Development :: Libraries',
         'Topic :: Software Development :: Libraries :: Python Modules'
     ],
+    python_requires='~=3.5',
     extras_require={
         'all': ['pyyaml >= 3.12', 'toml >= 0.10.0'],
         'yaml': ['pyyaml >= 3.12'],

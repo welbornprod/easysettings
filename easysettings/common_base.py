@@ -6,25 +6,9 @@
 """
 
 import os
+import pathlib
 import shutil
-try:
-    from collections import UserDict
-except ImportError:
-    # Python 2..
-    from UserDict import UserDict
-try:
-    # Loading a config file from a Path will work.
-    import pathlib
-except ImportError:
-    # Paths are not even considered.
-    pathlib = None
-
-
-try:
-    FileNotFoundError
-except NameError:
-    # Python 2..
-    FileNotFoundError = IOError
+from collections import UserDict
 
 
 class _NotSet(object):
@@ -117,8 +101,7 @@ def load_settings(cls, filename, default=None, **kwargs):
     return config
 
 
-# Explicitly inheriting from `object` for Python 2.7. Not an old-style class.
-class SettingsBase(UserDict, object):
+class SettingsBase(UserDict):
     """ Base class for all *Settings classes. Holds shared methods. """
     def __init__(
             self, iterable=None, filename=None, load_kwargs=None, **kwargs):
