@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """ test_yamlsettings.py
     Unit tests for YAMLSettings.
 
@@ -8,6 +6,7 @@
 """
 
 import os
+import pathlib
 import sys
 import unittest
 import tempfile
@@ -37,18 +36,6 @@ from .yaml_settings import (
     load_yaml_settings,
     YAMLSettings,
 )
-
-try:
-    # For pathlib tests.
-    import pathlib
-except ImportError:
-    pathlib = None
-
-try:
-    FileNotFoundError
-except NameError:
-    # Python 2.7.
-    FileNotFoundError = IOError
 
 
 class BackedUpWriterTests(unittest.TestCase):

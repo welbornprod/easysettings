@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """ json_settings.py
 
     ...Simple JSON settings class that uses a JSON mixin.

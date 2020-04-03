@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """ toml_settings.py
 
     ...Simple TOML settings class.

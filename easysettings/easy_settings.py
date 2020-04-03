@@ -10,18 +10,6 @@ from .common_base import preferred_file
 # easy settings version
 __version__ = '3.3.3'
 
-# Python 3 compatibility flag
-# ...we need this because pickle likes to use bytes in python 3, and strings
-#    in python 2. We will be using strings because they fit the config file
-#    format we have been using.
-# see: safe_pickled_str(), safe_pickled_obj(), and their helper
-# pickled_str()
-if sys.version_info.major > 2:
-    PYTHON3 = True
-    # python 3 needs no long() function.
-    long = int
-else:
-    PYTHON3 = False
 # Safe ISO 8601 format for dates/datetimes.
 ISO8601 = '%Y-%m-%dT%H:%M:%SZ'
 
@@ -601,11 +589,7 @@ class EasySettings(object):
         try:
             if spicklefile is None:
                 spicklefile = self.configfile.replace('.conf', '.pkl')
-            if PYTHON3:
-                smode = 'rb'
-            else:
-                smode = 'r'
-            with open(spicklefile, smode) as fpickle_read:
+            with open(spicklefile, 'rb') as fpickle_read:
                 es = pickle.load(fpickle_read)
                 self.configfile = es.configfile
                 self.name = es.name
@@ -727,11 +711,7 @@ class EasySettings(object):
         try:
             if spicklefile is None:
                 spicklefile = self.configfile.replace('.conf', '.pkl')
-            if PYTHON3:
-                smode = 'wb'
-            else:
-                smode = 'w'
-            with open(spicklefile, smode) as fpickle_write:
+            with open(spicklefile, 'wb') as fpickle_write:
                 pickle.dump(self, fpickle_write)
                 return True
             return False
@@ -992,12 +972,8 @@ def pickled_str(pickle_dumps_returned):
         ex:
             mystring = pickled_str(pickle.dumps(MyObject, 0)
     """
-
-    if PYTHON3:
-        byte_array = bytearray(pickle_dumps_returned)
-        return "".join(chr(int(c)) for c in byte_array)
-    else:
-        return pickle_dumps_returned
+    byte_array = bytearray(pickle_dumps_returned)
+    return "".join(chr(int(c)) for c in byte_array)
 
 
 def safe_pickle_obj(string_):
@@ -1009,10 +985,7 @@ def safe_pickle_obj(string_):
             my_object = safe_pickle_obj(safe_pickle_str('12345678'))
             my_obj2 = safe_pickle_obj(safe_pickle_str(['my','list', 'obj']))
     """
-    if PYTHON3:
-        return pickle.loads(bytearray(string_, 'utf-8'))
-    else:
-        return pickle.loads(string_)
+    return pickle.loads(bytearray(string_, 'utf-8'))
 
 
 def safe_pickle_str(object_):
@@ -1029,10 +1002,9 @@ def str_(data):
         for when Python 3 uses Bytes where Python 2 used Strings.
         Should be used anywhere you would use the str() function.
     """
-    if PYTHON3:
-        # Safer conversion from bytes to string for python 3.
-        if isinstance(data, (bytes, bytearray)):
-            return data.decode()
+    # Safer conversion from bytes to string for python 3.
+    if isinstance(data, (bytes, bytearray)):
+        return data.decode()
     return str(data)
 
 

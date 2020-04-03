@@ -1,6 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 '''
   EasySettings
   An easy interface for setting and retrieving application settings.

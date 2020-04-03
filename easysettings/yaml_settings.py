@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
 """ yaml_settings.py
 
     ...Simple YAML settings class.
