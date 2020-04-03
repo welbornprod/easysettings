@@ -8,3 +8,4 @@ build
 *.egg-info
 /.tox
 /.coverage
+coverage_html
