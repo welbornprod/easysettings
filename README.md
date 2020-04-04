@@ -42,6 +42,11 @@ You can use this in your `requirements.txt`:
 easysettings == 3.3.3
 ```
 
+You can still clone version 3.3.3 using the `3.3.3` branch:
+```bash
+git clone -b 3.3.3 git@github.com:welbornprod/easysettings.git
+```
+
 * Version 3.3.3:
 
 Extra `kwargs` can be passed to the `load()`/`from_file()` methods on `YAMLSettings` and
