@@ -22,6 +22,26 @@ config files.
 
 ## Bug Fixes
 
+
+* Version 4.0.0:
+
+Python 2.7 is no longer supported. If you are using Python 2.7 you will need to
+be specific when installing EasySettings. Version 3.3.3 was the last version
+with Python 2.7 support. It will no longer receive bug fixes or new features.
+If the latest version of EasySettings has broken your application, uninstall it
+and install version 3.3.3:
+```bash
+pip install 'easysettings==3.3.3'
+
+# Or, with TOML/YAML dependencies:
+pip install 'easysettings[all]==3.3.3'
+```
+
+You can use this in your `requirements.txt`:
+```
+easysettings == 3.3.3
+```
+
 * Version 3.3.3:
 
 Extra `kwargs` can be passed to the `load()`/`from_file()` methods on `YAMLSettings` and
@@ -37,13 +57,6 @@ by specifying them:
 ```bash
 pip install --user "easysettings[all]"
 ```
-
-* Version 3.2.1:
-
-Added basic support for `date`/`datetime` objects in the `EasySettings` class.
-This does not include timezone support.
-For advanced date serialization, you will need to serialize the date *before*
-saving the setting.
 
 
 ## Examples
