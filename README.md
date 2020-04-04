@@ -20,50 +20,6 @@ config in YAML format. `load_yaml_settings()` is the preferred method for loadin
 config files.
 
 
-## Bug Fixes
-
-
-* Version 4.0.0:
-
-Python 2.7 is no longer supported. If you are using Python 2.7 you will need to
-be specific when installing EasySettings. Version 3.3.3 was the last version
-with Python 2.7 support. It will no longer receive bug fixes or new features.
-If the latest version of EasySettings has broken your application, uninstall it
-and install version 3.3.3:
-```bash
-pip install 'easysettings==3.3.3'
-
-# Or, with TOML/YAML dependencies:
-pip install 'easysettings[all]==3.3.3'
-```
-
-You can use this in your `requirements.txt`:
-```
-easysettings == 3.3.3
-```
-
-You can still clone version 3.3.3 using the `3.3.3` branch:
-```bash
-git clone -b 3.3.3 git@github.com:welbornprod/easysettings.git
-```
-
-* Version 3.3.3:
-
-Extra `kwargs` can be passed to the `load()`/`from_file()` methods on `YAMLSettings` and
-`TOMLSettings`. You have to use `load_kwargs=kwargs` when instantiating the
-class directly. It will forward the `kwargs` to the loader later in this case.
-This allows a `Loader` to be specified when using the `yaml` settings, and
-future-proofs EasySettings.
-
-* Version 3.3.2:
-
-Extra dependencies for `YAMLSettings`/`TOMLSettings` can be installed as extras
-by specifying them:
-```bash
-pip install --user "easysettings[all]"
-```
-
-
 ## Examples
 
 Example of EasySettings basic usage:
@@ -103,6 +59,7 @@ settings.save()
 settings.setsave("homedir", "/myuserdir")
 ```
 
+
 ### Advanced:
 
 ```python
@@ -124,6 +81,7 @@ settings.setsave("homedir", "/myuserdir")
     # clear all values, leave option names.
     settings.clear_values()
 ```
+
 
 ### Comparison:
 
@@ -147,6 +105,7 @@ if settings > settings2:
 # ... the < > features are based on amount of options.
 #     the = features are based on option names and values.
 ```
+
 
 ## Features
 
@@ -211,6 +170,7 @@ except Exception as exEx:
     print "General Error!"
 ```
 
+
 ## Automatic Creation:
 
 
@@ -265,6 +225,7 @@ if not os.path.isfile(settings.configfile):
     print 'config file does not exist, and was not created.'
 ```
 
+
 # JSONSettings, TOMLSettings, and YAMLSettings:
 
 All of the `*Settings` objects are simple `UserDict`s that allow loading and saving
@@ -272,6 +233,7 @@ in the specified format. All keys and values must be serializable using the
 specified format. If you don't already have the `pyyaml` and `toml` packages
 (not `pytoml`), be sure to use `pip install "easysettings[all]"` to install
 those along with EasySettings.
+
 
 ## JSONSettings Example:
 
@@ -298,6 +260,7 @@ js = JSONSettings.from_file('myjsonfile.json')
 ```
 
 The same goes for `TOMLSettings` and `YAMLSettings`.
+
 
 ## TOMLSettings Example:
 
@@ -328,6 +291,7 @@ ts.setsave('option2', 'value2')
 ts = TOMLSettings.from_file('mytomlfile.toml')
 ```
 
+
 ## YAMLSettings Example:
 
 ```python
@@ -355,6 +319,7 @@ ys.setsave('option2', 'value2')
 ys = YAMLSettings.from_file('myyamlfile.yaml')
 ```
 
+
 # PyPi Package
 
 Full PyPi package available at: http://pypi.python.org/pypi/EasySettings
@@ -372,6 +337,12 @@ After that you should be able to install EasySettings by typing:
 pip install --user easysettings
 ```
 
+If you are using Python 2.7, you will need to use EasySettings v3.3.3:
+```bash
+pip install --user "easysettings==3.3.3"
+```
+
+
 ## Extras
 If you would like to use the opt-in YAML and TOML features, you will need the
 `pyyaml` and `toml` packages (not pytoml). These can be requested individually,
@@ -387,6 +358,51 @@ pip install --user "easysettings[toml]"
 pip install --user "easysettings[all]"
 ```
 
+
+## Bug Fixes
+
+
+* Version 4.0.0:
+
+Python 2.7 is no longer supported. If you are using Python 2.7 you will need to
+be specific when installing EasySettings. Version 3.3.3 was the last version
+with Python 2.7 support. It will no longer receive bug fixes or new features.
+If the latest version of EasySettings has broken your application, uninstall it
+and install version 3.3.3:
+```bash
+pip install 'easysettings==3.3.3'
+
+# Or, with TOML/YAML dependencies:
+pip install 'easysettings[all]==3.3.3'
+```
+
+You can use this in your `requirements.txt`:
+```
+easysettings == 3.3.3
+```
+
+You can still clone version 3.3.3 using the `3.3.3` branch:
+```bash
+git clone -b 3.3.3 git@github.com:welbornprod/easysettings.git
+```
+
+* Version 3.3.3:
+
+Extra `kwargs` can be passed to the `load()`/`from_file()` methods on `YAMLSettings` and
+`TOMLSettings`. You have to use `load_kwargs=kwargs` when instantiating the
+class directly. It will forward the `kwargs` to the loader later in this case.
+This allows a `Loader` to be specified when using the `yaml` settings, and
+future-proofs EasySettings.
+
+* Version 3.3.2:
+
+Extra dependencies for `YAMLSettings`/`TOMLSettings` can be installed as extras
+by specifying them:
+```bash
+pip install --user "easysettings[all]"
+```
+
+
 # Source Code
 
 You can view the source for this package at: https://github.com/welbornprod/easysettings
@@ -395,6 +411,7 @@ You can view the source for this package at: https://github.com/welbornprod/easy
 # Website
 
 Be sure to visit http://welbornprod.com for more projects and information from Welborn Productions.
+
 
 # Notes
 
