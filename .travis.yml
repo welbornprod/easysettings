@@ -1,11 +1,5 @@
 language: python
 sudo: false
-addons:
-  apt:
-    packages:
-      - python3.7
-      - python3.8
-
 python:
   - "3.5"
   - "3.6"
@@ -13,7 +7,7 @@ python:
   - "3.8"
 
 install:
-  - pip install tox
+  - pip install tox-travis
 
 script:
   - tox
