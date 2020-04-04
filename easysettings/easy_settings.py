@@ -8,7 +8,7 @@ from datetime import date, datetime
 from .common_base import preferred_file
 
 # easy settings version
-__version__ = '3.3.3'
+__version__ = '4.0.0'
 
 # Safe ISO 8601 format for dates/datetimes.
 ISO8601 = '%Y-%m-%dT%H:%M:%SZ'
