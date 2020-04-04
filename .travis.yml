@@ -1,7 +1,12 @@
 language: python
 sudo: false
+addons:
+  apt:
+    packages:
+      - python3.7
+      - python3.8
+
 python:
-  - "2.7"
   - "3.5"
   - "3.6"
   - "3.7"
