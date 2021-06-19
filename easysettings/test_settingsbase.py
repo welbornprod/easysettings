@@ -5,6 +5,7 @@
     -Christopher Welborn 05-08-2019
 """
 
+# TODO: Test SettingsBase.add_file & SettingsBase.merge!
 import os
 import pathlib
 import sys
@@ -160,6 +161,28 @@ class SettingsBaseTests(object):
             suffix='.txt',
             prefix='easysettings.BackedUpWriter.',
         )
+
+    def test_add_file(self):
+        """ Add file should merge new files, and raise on non-optional files """
+        settings = self.settings_cls({'a': 1, 'b': 2})
+        settings.add_file(self.testfile, optional=False)
+        self.assertDictEqual(
+            settings.data,
+            {'a': 1, 'b': 2, 'option1': 'value1', 'option2': 'value2'},
+            msg='Failed to add new file!',
+        )
+        # Make sure to raise FileNotFoundError for non-optional missing files.
+        raisecatch = self.assertRaises(
+            FileNotFoundError,
+            msg='add_file() failed to raise FileNotFoundError!',
+        )
+        with raisecatch:
+            settings.add_file('DOESNOTEXIST', optional=False)
+        # Make sure not to raise on optional missing files.
+        try:
+            settings.add_file('DOESNOTEXIST', optional=True)
+        except FileNotFoundError:
+            self.fail('Should not raise FileNotFoundError for optional files!')
 
     def test_get(self):
         """ .get() should raise on missing keys. """
@@ -376,6 +399,24 @@ class SettingsBaseTests(object):
         self.assertDictEqual(
             d, settings.data,
             msg='Failed to add default setting.',
+        )
+
+    def test_merge(self):
+        """ merge should merge existing settings and dicts """
+        settings = self.settings_cls({'a': 1, 'b': 2, 'c': 3})
+        settings2 = self.settings_cls({'c': 4, 'd': 5})
+        settings.merge(settings2)
+        self.assertDictEqual(
+            settings.data,
+            {'a': 1, 'b': 2, 'c': 4, 'd': 5},
+            msg='Failed to merge another settings instance!',
+        )
+        # Try a normal dict.
+        settings.merge({'a': 2, 'c': 3, 'e': 6})
+        self.assertDictEqual(
+            settings.data,
+            {'a': 2, 'b': 2, 'c': 3, 'd': 5, 'e': 6},
+            msg='Failed to merge another dict!',
         )
 
     def test_setattr(self):

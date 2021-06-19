@@ -8,7 +8,7 @@ from datetime import date, datetime
 from .common_base import preferred_file
 
 # easy settings version
-__version__ = '4.0.0'
+__version__ = '4.0.1'
 
 # Safe ISO 8601 format for dates/datetimes.
 ISO8601 = '%Y-%m-%dT%H:%M:%SZ'
@@ -200,6 +200,8 @@ class EasySettings(object):
             else:
                 parsed.append('# {}'.format(stripped))
         return '\n'.join(parsed)
+
+    # TODO: def add_file(filepath, optional=False)
 
     def clear(self):
         """ Clears all settings without warning, does not save to disk.
@@ -600,6 +602,8 @@ class EasySettings(object):
                 return es
         except Exception:
             return None
+
+    # TODO: def merge(other)
 
     def read_file_noset(self, sfile=None):
         """ Reads config file, returns a settings dict.

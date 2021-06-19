@@ -153,6 +153,22 @@ class SettingsBase(UserDict):
                     return
         object.__setattr__(self, key, value)
 
+    def add_file(self, filename, optional=True, **kwargs):
+        """ Merges another config file, overwriting any existing key values.
+            If `optional` is False, a FileNotFound error is raised for mising
+            files.
+            Any `kwargs` are passed to the classes `from_file()` method.
+        """
+        if os.path.exists(filename):
+            c = self.__class__.from_file(filename, **kwargs)
+            self.merge(c)
+        else:
+            if not optional:
+                raise FileNotFoundError(
+                    'Missing non-optional config file: {}'.format(filename)
+                )
+        return self
+
     @classmethod
     def from_file(cls, filename, **kwargs):
         raise NotImplementedError('SettingsBase should not be used directly.')
@@ -214,6 +230,21 @@ class SettingsBase(UserDict):
             Can be overridden to modify values after encoding.
         """
         return key, value
+
+    def merge(self, other):
+        """ Merge an existing class's keys/values with this one.
+            The other class will overwrite existing keys/values.
+        """
+        if not (hasattr(other, 'items') and callable(other.items)):
+            raise TypeError(
+                'Expecting {cls}, got: {actualcls}'.format(
+                    cls=self.__class__.__name__,
+                    actualcls=other.__class__.__name__
+                )
+            )
+        for k, v in other.items():
+            self[k] = v
+        return self
 
     def save(self, module, filename=None, **kwargs):
         """ Save this dict to a file using `module`.dump(**kwargs).
