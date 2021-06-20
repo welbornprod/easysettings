@@ -201,7 +201,26 @@ class EasySettings(object):
                 parsed.append('# {}'.format(stripped))
         return '\n'.join(parsed)
 
-    # TODO: def add_file(filepath, optional=False)
+    def add_file(self, filename, optional=True, **kwargs):
+        """ Merges another config file, overwriting any existing key values.
+            If `optional` is False, a FileNotFoundError is raised for mising
+            files.
+            Any `kwargs` are passed to the classes `from_file()` method.
+        """
+        if os.path.exists(filename):
+            # filename, name, version, header
+            kwargs['filename'] = filename
+            kwargs['name'] = kwargs.get('name', self.name)
+            kwargs['version'] = kwargs.get('version', self.version)
+            kwargs['header'] = kwargs.get('header', self.header)
+            c = self.__class__.from_file(**kwargs)
+            self.merge(c)
+        else:
+            if not optional:
+                raise FileNotFoundError(
+                    'Missing non-optional config file: {}'.format(filename)
+                )
+        return self
 
     def clear(self):
         """ Clears all settings without warning, does not save to disk.
@@ -477,6 +496,10 @@ class EasySettings(object):
             hasit = False
         return hasit
 
+    def items(self):
+        """ Alias for self.settings.items() """
+        return self.settings.items()
+
     def is_saved(self):
         """ Returns True if the current settings match what is saved
             in the config file.
@@ -603,7 +626,20 @@ class EasySettings(object):
         except Exception:
             return None
 
-    # TODO: def merge(other)
+    def merge(self, other):
+        """ Merge an existing class's keys/values with this one.
+            The other class will overwrite existing keys/values.
+        """
+        if not (hasattr(other, 'items') and callable(other.items)):
+            raise TypeError(
+                'Expecting {cls} or items() method, got: {actualcls}'.format(
+                    cls=self.__class__.__name__,
+                    actualcls=other.__class__.__name__
+                )
+            )
+        for k, v in other.items():
+            self.settings[k] = v
+        return self
 
     def read_file_noset(self, sfile=None):
         """ Reads config file, returns a settings dict.

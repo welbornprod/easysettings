@@ -70,6 +70,41 @@ class EasySettingsTests(unittest.TestCase):
         with open(filename, 'w') as f:
             f.write('# Test settings.')
 
+    def test_add_file(self):
+        """ add_file() should merge new files, and raise on non-optional files
+        """
+        settings = EasySettings()
+        settings.settings = {'a': 1, 'b': 2}
+        settings2 = EasySettings(self.testfile)
+        settings2.settings = {k: v for k, v in self.test_values}
+        settings2.save()
+        settings.add_file(self.testfile, optional=False)
+        self.assertDictEqual(
+            settings.settings,
+            {
+                'a': 1,
+                'b': 2,
+                'option1': 'value1',
+                'option2': 'value2',
+                'option3': 'value3',
+            },
+            msg='Failed to add new file: {}'.format(
+                self.testfile,
+            ),
+        )
+        # Make sure to raise FileNotFoundError for non-optional missing files.
+        raisecatch = self.assertRaises(
+            FileNotFoundError,
+            msg='add_file() failed to raise FileNotFoundError!',
+        )
+        with raisecatch:
+            settings.add_file('DOESNOTEXIST', optional=False)
+        # Make sure not to raise on optional missing files.
+        try:
+            settings.add_file('DOESNOTEXIST', optional=True)
+        except FileNotFoundError:
+            self.fail('Should not raise FileNotFoundError for optional files!')
+
     def test_compare_opts(self):
         """ compare_settings() should make a good comparison. """
         es1 = EasySettings()
@@ -357,6 +392,26 @@ class EasySettingsTests(unittest.TestCase):
         self.assertTrue(
             ('new_option' in rawdata) and ('value' in rawdata),
             msg='Could not find new option in saved data!'
+        )
+
+    def test_merge(self):
+        """ merge should merge existing settings and dicts """
+        settings = EasySettings()
+        settings.settings = {'a': 1, 'b': 2, 'c': 3}
+        settings2 = EasySettings()
+        settings2.settings = {'c': 4, 'd': 5}
+        settings.merge(settings2)
+        self.assertDictEqual(
+            settings.settings,
+            {'a': 1, 'b': 2, 'c': 4, 'd': 5},
+            msg='Failed to merge another settings instance!',
+        )
+        # Try a normal dict.
+        settings.merge({'a': 2, 'c': 3, 'e': 6})
+        self.assertDictEqual(
+            settings.settings,
+            {'a': 2, 'b': 2, 'c': 3, 'd': 5, 'e': 6},
+            msg='Failed to merge another dict!',
         )
 
     def test_removals(self):

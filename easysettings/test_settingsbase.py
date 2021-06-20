@@ -163,7 +163,8 @@ class SettingsBaseTests(object):
         )
 
     def test_add_file(self):
-        """ Add file should merge new files, and raise on non-optional files """
+        """ add_file() should merge new files, and raise on non-optional files
+        """
         settings = self.settings_cls({'a': 1, 'b': 2})
         settings.add_file(self.testfile, optional=False)
         self.assertDictEqual(

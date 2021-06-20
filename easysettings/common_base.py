@@ -155,7 +155,7 @@ class SettingsBase(UserDict):
 
     def add_file(self, filename, optional=True, **kwargs):
         """ Merges another config file, overwriting any existing key values.
-            If `optional` is False, a FileNotFound error is raised for mising
+            If `optional` is False, a FileNotFoundError is raised for mising
             files.
             Any `kwargs` are passed to the classes `from_file()` method.
         """
