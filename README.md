@@ -361,6 +361,27 @@ pip install --user "easysettings[all]"
 
 ## Bug Fixes
 
+* Version 4.0.1:
+
+You can now merge files with existing settings instances. This allows multiple
+config files to be used. The last call to `add_file()` will overwrite existing
+values, and add new ones. If `optional=False` is used, a `FileNotFoundError`
+will be raised for missing files. This works for all settings classes (
+`EasySettings`, `JSONSettings`, etc.).
+
+```python
+import os
+from easysettings import load_json_settings
+
+
+settings = (
+    # Non-optional config file.
+    load_json_settings('/usr/local/share/myapp/myapp.json')
+    # Optional files that will overwrite existing values.
+    .add_file(os.path.expanduser('~/.local/share/myapp/myapp.json'), optional=True)
+    .add_file('myapp.json', optional=True)
+)
+```
 
 * Version 4.0.0:
 

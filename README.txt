@@ -22,48 +22,6 @@ to use a standard format, such as:
    methods to load/save config in YAML format. ``load_yaml_settings()``
    is the preferred method for loading config files.
 
-Bug Fixes
----------
-
--  Version 4.0.0:
-
-Python 2.7 is no longer supported. If you are using Python 2.7 you will
-need to be specific when installing EasySettings. Version 3.3.3 was the
-last version with Python 2.7 support. It will no longer receive bug
-fixes or new features. If the latest version of EasySettings has broken
-your application, uninstall it and install version 3.3.3:
-
-.. code:: bash
-
-    pip install 'easysettings==3.3.3'
-
-    # Or, with TOML/YAML dependencies:
-    pip install 'easysettings[all]==3.3.3'
-
-You can use this in your ``requirements.txt``:
-
-::
-
-    easysettings == 3.3.3
-
--  Version 3.3.3:
-
-Extra ``kwargs`` can be passed to the ``load()``/``from_file()`` methods
-on ``YAMLSettings`` and ``TOMLSettings``. You have to use
-``load_kwargs=kwargs`` when instantiating the class directly. It will
-forward the ``kwargs`` to the loader later in this case. This allows a
-``Loader`` to be specified when using the ``yaml`` settings, and
-future-proofs EasySettings.
-
--  Version 3.3.2:
-
-Extra dependencies for ``YAMLSettings``/``TOMLSettings`` can be
-installed as extras by specifying them:
-
-.. code:: bash
-
-    pip install --user "easysettings[all]"
-
 Examples
 --------
 
@@ -387,6 +345,12 @@ After that you should be able to install EasySettings by typing:
 
     pip install --user easysettings
 
+If you are using Python 2.7, you will need to use EasySettings v3.3.3:
+
+.. code:: bash
+
+    pip install --user "easysettings==3.3.3"
+
 Extras
 ------
 
@@ -404,6 +368,77 @@ installation:
     pip install --user "easysettings[toml]"
 
     # Install with both dependencies to use YAMLSettings and TOMLSettings:
+    pip install --user "easysettings[all]"
+
+Bug Fixes
+---------
+
+-  Version 4.0.1:
+
+You can now merge files with existing settings instances. This allows
+multiple config files to be used. The last call to ``add_file()`` will
+overwrite existing values, and add new ones. If ``optional=False`` is
+used, a ``FileNotFoundError`` will be raised for missing files. This
+works for all settings classes ( ``EasySettings``, ``JSONSettings``,
+etc.).
+
+.. code:: python
+
+    import os
+    from easysettings import load_json_settings
+
+
+    settings = (
+        # Non-optional config file.
+        load_json_settings('/usr/local/share/myapp/myapp.json')
+        # Optional files that will overwrite existing values.
+        .add_file(os.path.expanduser('~/.local/share/myapp/myapp.json'), optional=True)
+        .add_file('myapp.json', optional=True)
+    )
+
+-  Version 4.0.0:
+
+Python 2.7 is no longer supported. If you are using Python 2.7 you will
+need to be specific when installing EasySettings. Version 3.3.3 was the
+last version with Python 2.7 support. It will no longer receive bug
+fixes or new features. If the latest version of EasySettings has broken
+your application, uninstall it and install version 3.3.3:
+
+.. code:: bash
+
+    pip install 'easysettings==3.3.3'
+
+    # Or, with TOML/YAML dependencies:
+    pip install 'easysettings[all]==3.3.3'
+
+You can use this in your ``requirements.txt``:
+
+::
+
+    easysettings == 3.3.3
+
+You can still clone version 3.3.3 using the ``3.3.3`` branch:
+
+.. code:: bash
+
+    git clone -b 3.3.3 git@github.com:welbornprod/easysettings.git
+
+-  Version 3.3.3:
+
+Extra ``kwargs`` can be passed to the ``load()``/``from_file()`` methods
+on ``YAMLSettings`` and ``TOMLSettings``. You have to use
+``load_kwargs=kwargs`` when instantiating the class directly. It will
+forward the ``kwargs`` to the loader later in this case. This allows a
+``Loader`` to be specified when using the ``yaml`` settings, and
+future-proofs EasySettings.
+
+-  Version 3.3.2:
+
+Extra dependencies for ``YAMLSettings``/``TOMLSettings`` can be
+installed as extras by specifying them:
+
+.. code:: bash
+
     pip install --user "easysettings[all]"
 
 Source Code

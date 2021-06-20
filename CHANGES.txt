@@ -1,3 +1,4 @@
+v4.0.1 06/20/21 -- add_file() and merge() for all settings classes
 v4.0.0 04/04/20 -- From now on, Python 2.7 will not be supported.
 v3.3.3 03/26/20 -- Multi-file support, Path support, and better tests.
 v3.3.2 03/25/20 -- All an "all" extra requirement, to install everything.
