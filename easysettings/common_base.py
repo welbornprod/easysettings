@@ -259,6 +259,8 @@ class SettingsBase(UserDict):
         with BackedUpWriter(self.filename) as f:
             module.dump(self.save_hook(self.data), f, **kwargs)
 
+        return self
+
     def save_hook(self, data):
         """ Called on self.data before JSON encoding, before saving.
             Can be overridden to modify self.data before encoding/saving.
@@ -283,6 +285,7 @@ class SettingsBase(UserDict):
                 value   : Value to set for the option/key.
         """
         self.data[option] = value
+        return self
 
     def set_defaults(self, default_config):
         """ Save a copy of keys/value-types from `default_config` to optionally
