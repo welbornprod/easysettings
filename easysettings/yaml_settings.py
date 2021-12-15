@@ -101,4 +101,4 @@ class YAMLSettings(SettingsBase):
 
     def setsave(self, option, value, filename=None):
         """ The same as calling .set() and then .save(). """
-        super(YAMLSettings, self).setsave(filename=filename)
+        super(YAMLSettings, self).setsave(option, value, filename=filename)

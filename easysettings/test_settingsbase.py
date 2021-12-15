@@ -475,6 +475,44 @@ class SettingsBaseTests(object):
             msg='setattr() did not change the real attribute.',
         )
 
+    def test_setsave(self):
+        """setsave() should work as a shortcut for set() and save()"""
+        settings = self.settings_cls.from_file(self.testfile)
+        settings.setsave('option5', 'value5', filename=self.testfile)
+
+        with open(self.testfile) as f:
+            rawdata = f.read()
+
+        self.assertEqual(
+            settings.option5,
+            'value5',
+            msg='setsave() did not set the attribute.',
+        )
+
+        self.assertTrue(
+            ('option5' in rawdata) and ('value5' in rawdata),
+            msg='Could not find new option in saved data!',
+        )
+
+    def test_chain_set_save(self):
+        """set() and save() can be chained"""
+        settings = self.settings_cls.from_file(self.testfile)
+        settings.set('option6', 'value6').save(filename=self.testfile)
+
+        with open(self.testfile) as f:
+            rawdata = f.read()
+
+        self.assertEqual(
+            settings.option6,
+            'value6',
+            msg='set().save() did not set the attribute.',
+        )
+
+        self.assertTrue(
+            ('option6' in rawdata) and ('value6' in rawdata),
+            msg='Could not find new option in saved data!',
+        )
+
 
 class JSONSettingsBaseTests(SettingsBaseTests):
     def test_encoder_decoder(self):

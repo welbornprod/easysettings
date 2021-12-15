@@ -106,4 +106,4 @@ class TOMLSettings(SettingsBase):
 
     def setsave(self, option, value, filename=None):
         """ The same as calling .set() and then .save(). """
-        super(TOMLSettings, self).setsave(filename=filename)
+        super(TOMLSettings, self).setsave(option, value, filename=filename)
