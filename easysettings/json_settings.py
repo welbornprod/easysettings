@@ -101,6 +101,8 @@ class JSONSettings(SettingsBase):
     def setsave(self, option, value, filename=None, sort_keys=False):
         """ The same as calling .set() and then .save(). """
         super(JSONSettings, self).setsave(
+            option,
+            value,
             filename=filename,
             sort_keys=sort_keys,
         )
